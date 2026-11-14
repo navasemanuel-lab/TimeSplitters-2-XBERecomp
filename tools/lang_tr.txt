@@ -1,0 +1,840 @@
+# Translations of the F1 panel (tools/make_lang.py). Per entry: the English text, then French, German, Italian, Portuguese.
+Each action has a main key and an alternate one. Click a box, then press the key, mouse button or wheel you want. Right click, or Delete while waiting, leaves it unassigned; Esc cancels. If the key was another action's, that one loses it. With nothing assigned to the wheel, it switches weapons and zooms with the scope on.
+Chaque action a une touche principale et une touche alternative. Cliquez sur une case, puis appuyez sur la touche, le bouton de la souris ou la molette voulus. Clic droit, ou Suppr pendant l'attente, la laisse sans affectation ; Échap annule. Si la touche appartenait à une autre action, celle-ci la perd. Sans rien d'affecté à la molette, elle change d'arme et zoome quand la lunette est en place.
+Jede Aktion hat eine Haupttaste und eine alternative Taste. Klicke auf ein Feld und drücke dann die gewünschte Taste, Maustaste oder das Mausrad. Rechtsklick oder Entf während des Wartens lässt sie unbelegt; Esc bricht ab. War die Taste einer anderen Aktion zugewiesen, verliert diese sie. Ist dem Mausrad nichts zugewiesen, wechselt es die Waffe und zoomt mit aufgesetztem Zielfernrohr.
+Ogni azione ha un tasto principale e uno alternativo. Fai clic su una casella, poi premi il tasto, il pulsante del mouse o la rotellina che vuoi. Clic destro, o Canc durante l'attesa, la lascia non assegnata; Esc annulla. Se il tasto era di un'altra azione, questa lo perde. Senza nulla assegnato alla rotellina, cambia arma e fa zoom con il mirino attivo.
+Cada ação tem uma tecla principal e uma alternativa. Clique numa caixa e depois prima a tecla, o botão do rato ou a roda que quiser. Clique direito, ou Delete durante a espera, deixa-a sem atribuição; Esc cancela. Se a tecla era de outra ação, essa fica sem ela. Sem nada atribuído à roda, ela muda de arma e faz zoom com a mira ativa.
+
+Mouse 1x is 0.1 degrees a count; with the scope on it turns less to cover the same.
+La souris 1x fait 0,1 degré par cran ; avec la lunette, elle tourne moins pour couvrir la même distance.
+Maus 1x entspricht 0,1 Grad pro Schritt; mit Zielfernrohr dreht sie weniger, um dieselbe Strecke abzudecken.
+Il mouse 1x vale 0,1 gradi per conteggio; con il mirino attivo ruota meno per coprire lo stesso spazio.
+Rato 1x são 0,1 graus por contagem; com a mira ativa roda menos para cobrir o mesmo.
+
+Native matches the window's pixels; Original draws the console's 480 lines. Higher sharpens the image and uses more GPU.
+Native correspond aux pixels de la fenêtre ; Original dessine les 480 lignes de la console. Plus haut affine l'image et consomme plus de GPU.
+Nativ entspricht den Pixeln des Fensters; Original zeichnet die 480 Zeilen der Konsole. Höher schärft das Bild und braucht mehr GPU.
+Nativa corrisponde ai pixel della finestra; Originale disegna le 480 righe della console. Più alta rende l'immagine più nitida e usa più GPU.
+Nativa iguala os pixels da janela; Original desenha as 480 linhas da consola. Mais alta afina a imagem e gasta mais GPU.
+
+The prompts of the menus and the pause screen (A Select, B Back...) show the buttons of the controller you use (Xbox, PlayStation 4 and 5, Switch) or the keys you have bound, and change at once when you rebind a key.
+Les indications des menus et de la pause (A Valider, B Retour...) affichent les boutons de la manette utilisée (Xbox, PlayStation 4 et 5, Switch) ou les touches affectées, et changent aussitôt si vous modifiez une touche.
+Die Hinweise der Menüs und des Pausenbildschirms (A Auswählen, B Zurück...) zeigen die Tasten des verwendeten Controllers (Xbox, PlayStation 4 und 5, Switch) oder die belegten Tasten und ändern sich sofort, wenn du eine Taste neu belegst.
+I suggerimenti dei menu e della pausa (A Seleziona, B Indietro...) mostrano i pulsanti del controller in uso (Xbox, PlayStation 4 e 5, Switch) o i tasti assegnati, e cambiano subito se riassegni un tasto.
+Os avisos dos menus e da pausa (A Aceitar, B Voltar...) mostram os botões do comando que usa (Xbox, PlayStation 4 e 5, Switch) ou as teclas atribuídas, e mudam logo se alterar uma tecla.
+
+Unlock everything (levels, characters and challenges of the profile) is in the game's menu: Options > Player Options > Unlock Everything.
+Tout débloquer (niveaux, personnages et défis du profil) se trouve dans le menu du jeu : Options > Player Options > Unlock Everything.
+Alles freischalten (Level, Charaktere und Herausforderungen des Profils) findest du im Spielmenü: Options > Player Options > Unlock Everything.
+Sblocca tutto (livelli, personaggi e sfide del profilo) si trova nel menu del gioco: Options > Player Options > Unlock Everything.
+Desbloquear tudo (níveis, personagens e desafios do perfil) está no menu do jogo: Options > Player Options > Unlock Everything.
+
+Everything applies at once. The game's view widens with the aspect ratio, at the same vertical angle; restart if you want the game to use its 16:9 screens from the start.
+Tout s'applique immédiatement. La vue du jeu s'élargit avec le format d'image, avec le même angle vertical ; redémarrez si vous voulez que le jeu utilise ses écrans 16:9 dès le début.
+Alles wird sofort übernommen. Die Spielansicht wird mit dem Seitenverhältnis breiter, bei gleichem vertikalem Winkel; starte neu, wenn das Spiel seine 16:9-Bildschirme von Anfang an nutzen soll.
+Tutto si applica subito. La vista del gioco si allarga con il rapporto d'aspetto, con lo stesso angolo verticale; riavvia se vuoi che il gioco usi le sue schermate 16:9 fin dall'inizio.
+Tudo se aplica de imediato. A vista do jogo alarga com a proporção do ecrã, com o mesmo ângulo vertical; reinicie se quiser que o jogo use os seus ecrãs 16:9 desde o início.
+
+In the top left corner: where each frame's time goes (game threads, draw thread, handover to the display, GPU work by kind, draws, audio mixer and the busiest threads). Measuring costs a little.
+En haut à gauche : où va le temps de chaque image (threads du jeu, thread de dessin, remise à l'écran, travail du GPU par type, dessins, mixeur audio et threads les plus occupés). Mesurer coûte un peu.
+Oben links: wohin die Zeit jedes Bildes geht (Spiel-Threads, Zeichen-Thread, Übergabe an die Anzeige, GPU-Arbeit nach Art, Zeichenaufrufe, Audiomixer und die ausgelastetsten Threads). Das Messen kostet etwas Leistung.
+In alto a sinistra: dove va il tempo di ogni fotogramma (thread di gioco, thread di disegno, consegna allo schermo, lavoro della GPU per tipo, disegni, mixer audio e thread più occupati). Misurare costa un po'.
+No canto superior esquerdo: para onde vai o tempo de cada fotograma (threads do jogo, thread de desenho, entrega ao ecrã, trabalho da GPU por tipo, desenhos, misturador de áudio e os threads mais ocupados). Medir custa um pouco.
+
+The same numbers in logs/game.log: an average every ten seconds (with the slowest 1% of frames), a line for each hitch (shaders made, textures loaded, the game waiting) and a summary every five minutes.
+Les mêmes chiffres dans logs/game.log : une moyenne toutes les dix secondes (avec les 1 % d'images les plus lentes), une ligne par saccade (shaders créés, textures chargées, jeu en attente) et un résumé toutes les cinq minutes.
+Dieselben Zahlen in logs/game.log: alle zehn Sekunden ein Durchschnitt (mit den langsamsten 1 % der Bilder), eine Zeile pro Ruckler (erstellte Shader, geladene Texturen, wartendes Spiel) und alle fünf Minuten eine Zusammenfassung.
+Gli stessi numeri in logs/game.log: una media ogni dieci secondi (con l'1% dei fotogrammi più lenti), una riga per ogni scatto (shader creati, texture caricate, gioco in attesa) e un riepilogo ogni cinque minuti.
+Os mesmos números em logs/game.log: uma média a cada dez segundos (com 1% dos fotogramas mais lentos), uma linha por cada soluço (shaders criados, texturas carregadas, jogo à espera) e um resumo a cada cinco minutos.
+
+Replaces the effects with Homefront's, fitted to the originals' rate and format. Applies when the next level loads.
+Remplace les effets par ceux de Homefront, adaptés à la fréquence et au format des originaux. S'applique au chargement du niveau suivant.
+Ersetzt die Effekte durch die von Homefront, angepasst an Rate und Format der Originale. Wird beim Laden des nächsten Levels angewendet.
+Sostituisce gli effetti con quelli di Homefront, adattati alla frequenza e al formato degli originali. Si applica al caricamento del livello successivo.
+Substitui os efeitos pelos do Homefront, ajustados à taxa e ao formato dos originais. Aplica-se ao carregar o nível seguinte.
+
+Music and effects volume is set in the game's Options > Audio Options.
+Le volume de la musique et des effets se règle dans Options > Audio Options du jeu.
+Die Lautstärke von Musik und Effekten stellst du im Spiel unter Options > Audio Options ein.
+Il volume di musica ed effetti si regola in Options > Audio Options del gioco.
+O volume da música e dos efeitos ajusta-se em Options > Audio Options do jogo.
+
+Uses the camera data the game keeps unused. Applies when the level starts.
+Utilise les données de caméra que le jeu conserve sans les utiliser. S'applique au début du niveau.
+Verwendet die Kameradaten, die das Spiel ungenutzt behält. Wird beim Start des Levels angewendet.
+Usa i dati della telecamera che il gioco conserva inutilizzati. Si applica all'inizio del livello.
+Usa os dados de câmara que o jogo guarda sem uso. Aplica-se ao começar o nível.
+
+Draws the whole level from anywhere: no portal or distance culling, no far plane and no fog. Applies at once.
+Dessine tout le niveau depuis n'importe où : sans élimination par portails ni par distance, sans plan lointain ni brouillard. S'applique immédiatement.
+Zeichnet den ganzen Level von überall: kein Portal- oder Entfernungs-Culling, keine Fernebene und kein Nebel. Wird sofort angewendet.
+Disegna l'intero livello da qualsiasi punto: senza eliminazione per portali o distanza, senza piano lontano né nebbia. Si applica subito.
+Desenha o nível inteiro de qualquer lugar: sem corte por portais nem por distância, sem plano distante nem nevoeiro. Aplica-se de imediato.
+
+Given when a Story level starts or restarts, with full ammo.
+Donné au début ou au redémarrage d'un niveau Histoire, avec les munitions pleines.
+Wird beim Start oder Neustart eines Story-Levels mit voller Munition gegeben.
+Viene dato all'inizio o al riavvio di un livello Storia, con munizioni al massimo.
+Dado quando um nível de História começa ou recomeça, com a munição cheia.
+
+Replaces the weapon models with the Beta Reborn mod's. Applies when the next level loads.
+Remplace les modèles d'armes par ceux du mod Beta Reborn. S'applique au chargement du niveau suivant.
+Ersetzt die Waffenmodelle durch die des Beta-Reborn-Mods. Wird beim Laden des nächsten Levels angewendet.
+Sostituisce i modelli delle armi con quelli della mod Beta Reborn. Si applica al caricamento del livello successivo.
+Substitui os modelos das armas pelos do mod Beta Reborn. Aplica-se ao carregar o nível seguinte.
+
+Replaces the textures with the Christmas Edition ones. Applies at once.
+Remplace les textures par celles de la Christmas Edition. S'applique immédiatement.
+Ersetzt die Texturen durch die der Christmas Edition. Wird sofort angewendet.
+Sostituisce le texture con quelle della Christmas Edition. Si applica subito.
+Substitui as texturas pelas da Christmas Edition. Aplica-se de imediato.
+
+Replaces the game's font with the September 2001 PS2 demo's. Applies at once.
+Remplace la police du jeu par celle de la démo PS2 de septembre 2001. S'applique immédiatement.
+Ersetzt die Schrift des Spiels durch die der PS2-Demo vom September 2001. Wird sofort angewendet.
+Sostituisce il carattere del gioco con quello della demo PS2 di settembre 2001. Si applica subito.
+Substitui o tipo de letra do jogo pelo da demo de PS2 de setembro de 2001. Aplica-se de imediato.
+
+Any damage kills, the player and the enemies, in Story levels.
+Tout dégât tue, le joueur comme les ennemis, dans les niveaux Histoire.
+Jeder Schaden tötet, Spieler wie Gegner, in Story-Levels.
+Qualsiasi danno uccide, sia il giocatore sia i nemici, nei livelli Storia.
+Qualquer dano mata, o jogador e os inimigos, nos níveis de História.
+
+Turns the view along with the right stick. Leave the controller still for a second to remove drift.
+Fait tourner la vue en même temps que le stick droit. Laissez la manette immobile une seconde pour supprimer la dérive.
+Dreht die Ansicht zusammen mit dem rechten Stick. Lass den Controller eine Sekunde ruhig liegen, um die Drift zu entfernen.
+Ruota la vista insieme allo stick destro. Lascia il controller fermo per un secondo per eliminare la deriva.
+Roda a vista junto com o stick direito. Deixe o comando parado um segundo para remover o desvio.
+
+Filter actions or keys...
+Filtrer les actions ou touches...
+Aktionen oder Tasten filtern...
+Filtra azioni o tasti...
+Filtrar ações ou teclas...
+
+Action
+Action
+Aktion
+Azione
+Ação
+
+Main
+Principale
+Haupt
+Principale
+Principal
+
+Alternate
+Alternative
+Alternativ
+Alternativo
+Alternativa
+
+No action matches.
+Aucune action ne correspond.
+Keine Aktion passt.
+Nessuna azione corrisponde.
+Nenhuma ação corresponde.
+
+Reset keys
+Réinitialiser les touches
+Tasten zurücksetzen
+Ripristina i tasti
+Repor teclas
+
+Press a key...
+Appuyez sur une touche...
+Taste drücken...
+Premi un tasto...
+Prima uma tecla...
+
+ was bound to
+ était affectée à
+ war belegt mit
+ era assegnato a
+ era de
+
+: it was left unassigned.
+ : elle est restée sans affectation.
+: sie ist jetzt unbelegt.
+: è rimasto non assegnato.
+: ficou sem atribuição.
+
+CONTROLLER
+MANETTE
+CONTROLLER
+CONTROLLER
+COMANDO
+
+Horizontal turn speed
+Vitesse de rotation horizontale
+Horizontale Drehgeschwindigkeit
+Velocità di rotazione orizzontale
+Velocidade de rotação horizontal
+
+Vertical turn speed
+Vitesse de rotation verticale
+Vertikale Drehgeschwindigkeit
+Velocità di rotazione verticale
+Velocidade de rotação vertical
+
+Horizontal speed when aiming
+Vitesse horizontale en visant
+Horizontale Geschwindigkeit beim Zielen
+Velocità orizzontale in mira
+Velocidade horizontal ao apontar
+
+Vertical speed when aiming
+Vitesse verticale en visant
+Vertikale Geschwindigkeit beim Zielen
+Velocità verticale in mira
+Velocidade vertical ao apontar
+
+MOUSE AND KEYBOARD
+SOURIS ET CLAVIER
+MAUS UND TASTATUR
+MOUSE E TASTIERA
+RATO E TECLADO
+
+Horizontal turn speed##m
+Vitesse de rotation horizontale##m
+Horizontale Drehgeschwindigkeit##m
+Velocità di rotazione orizzontale##m
+Velocidade de rotação horizontal##m
+
+Vertical speed (relative to the horizontal)
+Vitesse verticale (par rapport à l'horizontale)
+Vertikale Geschwindigkeit (relativ zur horizontalen)
+Velocità verticale (rispetto all'orizzontale)
+Velocidade vertical (relativa à horizontal)
+
+Horizontal speed when aiming##m
+Vitesse horizontale en visant##m
+Horizontale Geschwindigkeit beim Zielen##m
+Velocità orizzontale in mira##m
+Velocidade horizontal ao apontar##m
+
+Vertical speed when aiming##m
+Vitesse verticale en visant##m
+Vertikale Geschwindigkeit beim Zielen##m
+Velocità verticale in mira##m
+Velocidade vertical ao apontar##m
+
+Invert vertical axis
+Inverser l'axe vertical
+Vertikale Achse invertieren
+Inverti asse verticale
+Inverter eixo vertical
+
+Crosshair sway when turning (GoldenEye style)
+Balancement du viseur en tournant (style GoldenEye)
+Fadenkreuz-Schwanken beim Drehen (GoldenEye-Stil)
+Oscillazione del mirino durante la rotazione (stile GoldenEye)
+Oscilação da mira ao rodar (estilo GoldenEye)
+
+Auto Lookahead (level the view to the horizon)
+Auto Lookahead (remet la vue à l'horizon)
+Auto Lookahead (Ansicht zum Horizont ausrichten)
+Auto Lookahead (livella la vista all'orizzonte)
+Auto Lookahead (nivela a vista ao horizonte)
+
+Reset to 1x
+Revenir à 1x
+Auf 1x zurücksetzen
+Ripristina a 1x
+Repor a 1x
+
+Display mode
+Mode d'affichage
+Anzeigemodus
+Modalità schermo
+Modo de ecrã
+
+Fullscreen
+Plein écran
+Vollbild
+Schermo intero
+Ecrã inteiro
+
+Windowed
+Fenêtré
+Fenster
+Finestra
+Janela
+
+Desktop
+Bureau
+Desktop
+Desktop
+Ambiente de trabalho
+
+Resolution
+Résolution
+Auflösung
+Risoluzione
+Resolução
+
+Aspect ratio
+Format d'image
+Seitenverhältnis
+Rapporto d'aspetto
+Proporção do ecrã
+
+Automatic (the screen's)
+Automatique (celui de l'écran)
+Automatisch (das des Bildschirms)
+Automatico (quello dello schermo)
+Automática (a do ecrã)
+
+Render scale
+Échelle de rendu
+Render-Skalierung
+Scala di rendering
+Escala de renderização
+
+Internal resolution
+Résolution interne
+Interne Auflösung
+Risoluzione interna
+Resolução interna
+
+Native
+Native
+Nativ
+Nativa
+Nativa
+
+Original
+Original
+Original
+Originale
+Original
+
+HUD not stretched on wide screens (at the screen's edges)
+HUD non étiré sur écrans larges (aux bords de l'écran)
+HUD auf Breitbild nicht gestreckt (an den Bildschirmrändern)
+HUD non allungato sugli schermi larghi (ai bordi dello schermo)
+HUD sem esticar em ecrãs largos (nos bordos do ecrã)
+
+Audio gain (0 = the console's own level)
+Gain audio (0 = niveau d'origine de la console)
+Audioverstärkung (0 = Originalpegel der Konsole)
+Guadagno audio (0 = livello originale della console)
+Ganho de áudio (0 = nível original da consola)
+
+Raises the overall volume with a soft limiter so it does not distort. 6 dB matches Boston's clean level.
+Augmente le volume général avec un limiteur doux pour éviter la distorsion. 6 dB correspond au niveau propre de Boston.
+Erhöht die Gesamtlautstärke mit einem weichen Limiter, damit nichts verzerrt. 6 dB entspricht dem sauberen Pegel von Boston.
+Alza il volume generale con un limitatore morbido per non distorcere. 6 dB equivale al livello pulito di Boston.
+Aumenta o volume geral com um limitador suave para não distorcer. 6 dB iguala o nível limpo de Boston.
+
+Game button icons by controller or keyboard
+Icônes de boutons du jeu selon la manette ou le clavier
+Tastensymbole im Spiel je nach Controller oder Tastatur
+Icone dei pulsanti di gioco in base a controller o tastiera
+Ícones de botões do jogo conforme o comando ou o teclado
+
+Automatic (by the last controller or key used)
+Automatique (selon la dernière manette ou touche utilisée)
+Automatisch (nach dem zuletzt benutzten Controller oder der letzten Taste)
+Automatico (in base all'ultimo controller o tasto usato)
+Automático (conforme o último comando ou tecla usado)
+
+Keyboard and mouse
+Clavier et souris
+Tastatur und Maus
+Tastiera e mouse
+Teclado e rato
+
+Icons
+Icônes
+Symbole
+Icone
+Ícones
+
+Now:
+Actuellement :
+Jetzt:
+Ora:
+Agora:
+
+Delete the profile
+Supprimer le profil
+Profil löschen
+Elimina il profilo
+Eliminar o perfil
+
+X / Delete again: delete (cancels itself in 6 s)
+X / Suppr encore : supprimer (s'annule seul en 6 s)
+X / Entf nochmal: löschen (bricht nach 6 s von selbst ab)
+X / Canc ancora: elimina (si annulla da solo in 6 s)
+X / Delete outra vez: eliminar (cancela-se sozinho em 6 s)
+
+See the whole map: no draw distance limit, no fog
+Voir toute la carte : sans limite de distance d'affichage ni brouillard
+Die ganze Karte sehen: keine Sichtweitenbegrenzung, kein Nebel
+Vedi l'intera mappa: senza limite di distanza di disegno né nebbia
+Ver todo o mapa: sem limite de distância de desenho nem nevoeiro
+
+Cutscenes without letterbox bars
+Cinématiques sans bandes noires
+Zwischensequenzen ohne schwarze Balken
+Filmati senza bande nere
+Cinemáticas sem barras pretas
+
+Crops the black bars at the top and bottom of the cutscene videos on wide screens.
+Rogne les bandes noires en haut et en bas des vidéos de cinématiques sur écrans larges.
+Schneidet die schwarzen Balken oben und unten der Zwischensequenz-Videos auf Breitbild ab.
+Ritaglia le bande nere in alto e in basso dei video dei filmati sugli schermi larghi.
+Recorta as barras pretas de cima e de baixo dos vídeos das cinemáticas em ecrãs largos.
+
+Always show reticle (without aiming)
+Toujours afficher le réticule (sans viser)
+Fadenkreuz immer anzeigen (auch ohne Zielen)
+Mostra sempre il mirino (senza mirare)
+Mostrar sempre a mira (sem apontar)
+
+The crosshair is always shown, not only when aiming or with a target near. Needs the crosshair turned on in the game's options.
+Le viseur est toujours visible, pas seulement en visant ou avec une cible proche. Nécessite le viseur activé dans les options du jeu.
+Das Fadenkreuz wird immer angezeigt, nicht nur beim Zielen oder mit einem Ziel in der Nähe. Erfordert das aktivierte Fadenkreuz in den Spieloptionen.
+Il mirino è sempre visibile, non solo quando si mira o con un bersaglio vicino. Richiede il mirino attivo nelle opzioni del gioco.
+A mira é sempre visível, não só ao apontar ou com um alvo perto. Precisa da mira ativada nas opções do jogo.
+
+TimeSplitters 1 style health and shield bars (instead of the arcs)
+Barres de vie et de bouclier style TimeSplitters 1 (au lieu des arcs)
+Lebens- und Schildbalken im TimeSplitters-1-Stil (statt der Bögen)
+Barre di salute e scudo in stile TimeSplitters 1 (al posto degli archi)
+Barras de vida e escudo ao estilo TimeSplitters 1 (em vez dos arcos)
+
+Two bars at the top left instead of the health and shield arcs. One player only.
+Deux barres en haut à gauche au lieu des arcs de vie et de bouclier. Un seul joueur uniquement.
+Zwei Balken oben links statt der Lebens- und Schildbögen. Nur mit einem Spieler.
+Due barre in alto a sinistra al posto degli archi di salute e scudo. Solo con un giocatore.
+Duas barras no canto superior esquerdo em vez dos arcos de vida e escudo. Só com um jogador.
+
+All the ammo you carry is kept full.
+Toutes les munitions que vous portez restent pleines.
+Die gesamte mitgeführte Munition bleibt voll.
+Tutte le munizioni che porti restano al massimo.
+Toda a munição que leva fica sempre cheia.
+
+Cheats
+Triches
+Cheats
+Trucchi
+Truques
+
+Invulnerability
+Invulnérabilité
+Unverwundbarkeit
+Invulnerabilità
+Invulnerabilidade
+
+Take no damage. Applies to all local players.
+Ne subit aucun dégât. S'applique à tous les joueurs locaux.
+Kein Schaden. Gilt für alle lokalen Spieler.
+Non subisci danni. Vale per tutti i giocatori locali.
+Não sofre dano. Aplica-se a todos os jogadores locais.
+
+MSAA
+MSAA
+MSAA
+MSAA
+MSAA
+
+Off
+Désactivé
+Aus
+Disattivato
+Desativado
+
+Edge smoothing
+Lissage des bords
+Kantenglättung
+Smussamento dei bordi
+Suavização de bordos
+
+Anisotropic filtering
+Filtrage anisotrope
+Anisotrope Filterung
+Filtro anisotropico
+Filtragem anisotrópica
+
+As the game asks
+Comme le demande le jeu
+Wie vom Spiel verlangt
+Come richiede il gioco
+Como o jogo pede
+
+Vertical sync
+Synchronisation verticale
+Vertikale Synchronisation
+Sincronizzazione verticale
+Sincronização vertical
+
+Brightness
+Luminosité
+Helligkeit
+Luminosità
+Brilho
+
+Game language (next start)
+Langue du jeu (au prochain démarrage)
+Spielsprache (beim nächsten Start)
+Lingua del gioco (al prossimo avvio)
+Idioma do jogo (no próximo arranque)
+
+The menus' and game's text. The voices stay English.
+Le texte des menus et du jeu. Les voix restent en anglais.
+Der Text der Menüs und des Spiels. Die Stimmen bleiben englisch.
+Il testo dei menu e del gioco. Le voci restano in inglese.
+O texto dos menus e do jogo. As vozes continuam em inglês.
+
+Saturation
+Saturation
+Sättigung
+Saturazione
+Saturação
+
+Contrast
+Contraste
+Kontrast
+Contrasto
+Contraste
+
+Fire heat shimmer
+Distorsion de chaleur du feu
+Hitzeflimmern des Feuers
+Distorsione da calore del fuoco
+Distorção de calor do fogo
+
+Atmosphere haze (the Xbox's soft filter over the picture)
+Brume d'atmosphère (le filtre doux de la Xbox sur l'image)
+Atmosphärischer Dunst (der weiche Xbox-Filter über dem Bild)
+Foschia atmosferica (il filtro morbido della Xbox sull'immagine)
+Névoa de atmosfera (o filtro suave da Xbox sobre a imagem)
+
+Motion trails (the previous frame blended in)
+Traînées de mouvement (l'image précédente mélangée)
+Bewegungsspuren (das vorherige Bild eingeblendet)
+Scie di movimento (il fotogramma precedente miscelato)
+Rastos de movimento (o fotograma anterior misturado)
+
+Weather trails (the ones rain and snow add)
+Traînées météo (celles qu'ajoutent la pluie et la neige)
+Wetterspuren (die, die Regen und Schnee hinzufügen)
+Scie del meteo (quelle che aggiungono pioggia e neve)
+Rastos do clima (os que a chuva e a neve acrescentam)
+
+Fire and explosion light with smooth edges on the level
+Lumière du feu et des explosions aux bords doux sur le niveau
+Feuer- und Explosionslicht mit weichen Kanten auf dem Level
+Luce di fuoco ed esplosioni con bordi morbidi sul livello
+Luz de fogo e explosões com bordos suaves no nível
+
+Field of view (original: 60)
+Champ de vision (original : 60)
+Sichtfeld (Original: 60)
+Campo visivo (originale: 60)
+Campo de visão (original: 60)
+
+%d degrees
+%d degrés
+%d Grad
+%d gradi
+%d graus
+
+Menus, loading and videos widescreen (no black bars)
+Menus, chargement et vidéos en grand écran (sans bandes noires)
+Menüs, Ladebildschirm und Videos im Breitbild (ohne schwarze Balken)
+Menu, caricamento e video a schermo largo (senza bande nere)
+Menus, carregamento e vídeos em ecrã largo (sem barras pretas)
+
+Tall health and shield arcs, as in TS2 Redux (off: original size)
+Arcs de vie et de bouclier hauts, comme dans TS2 Redux (désactivé : taille d'origine)
+Hohe Lebens- und Schildbögen wie in TS2 Redux (aus: Originalgröße)
+Archi di salute e scudo alti, come in TS2 Redux (disattivato: dimensione originale)
+Arcos de vida e escudo altos, como no TS2 Redux (desativado: tamanho original)
+
+HDR10 (display with HDR on in Windows)
+HDR10 (écran avec HDR activé dans Windows)
+HDR10 (Bildschirm mit aktiviertem HDR in Windows)
+HDR10 (schermo con HDR attivo in Windows)
+HDR10 (ecrã com HDR ativado no Windows)
+
+active
+actif
+aktiv
+attivo
+ativo
+
+HDR is off in Windows
+HDR est désactivé dans Windows
+HDR ist in Windows ausgeschaltet
+L'HDR è disattivato in Windows
+O HDR está desativado no Windows
+
+HDR white
+Blanc HDR
+HDR-Weiß
+Bianco HDR
+Branco HDR
+
+HDR highlights
+Hautes lumières HDR
+HDR-Spitzlichter
+Luci HDR
+Brilhos HDR
+
+Windows'
+Celui de Windows
+Der von Windows
+Quello di Windows
+O do Windows
+
+The display's
+Celui de l'écran
+Der des Bildschirms
+Quello dello schermo
+O do ecrã
+
+Show frames per second
+Afficher les images par seconde
+Bilder pro Sekunde anzeigen
+Mostra i fotogrammi al secondo
+Mostrar fotogramas por segundo
+
+Show performance statistics
+Afficher les statistiques de performance
+Leistungsstatistik anzeigen
+Mostra le statistiche delle prestazioni
+Mostrar estatísticas de desempenho
+
+Save performance in the log
+Enregistrer les performances dans le log
+Leistung im Log speichern
+Salva le prestazioni nel log
+Guardar o desempenho no log
+
+Audio output (on restart)
+Sortie audio (au redémarrage)
+Audioausgabe (beim Neustart)
+Uscita audio (al riavvio)
+Saída de áudio (ao reiniciar)
+
+Automatic (by your speakers)
+Automatique (selon vos haut-parleurs)
+Automatisch (nach deinen Lautsprechern)
+Automatico (in base agli altoparlanti)
+Automático (conforme as suas colunas)
+
+Stereo 2.0
+Stéréo 2.0
+Stereo 2.0
+Stereo 2.0
+Estéreo 2.0
+
+Homefront sounds (resourcepacks/homefront/sounds)
+Sons de Homefront (resourcepacks/homefront/sounds)
+Homefront-Sounds (resourcepacks/homefront/sounds)
+Suoni di Homefront (resourcepacks/homefront/sounds)
+Sons do Homefront (resourcepacks/homefront/sounds)
+
+Opening camera in Robot Factory (like Siberia's)
+Caméra d'introduction à Robot Factory (comme celle de Siberia)
+Eröffnungskamera in Robot Factory (wie die von Siberia)
+Telecamera d'ingresso in Robot Factory (come quella di Siberia)
+Câmara de entrada em Robot Factory (como a de Siberia)
+
+Debug mode: render the whole map
+Mode debug : rendre toute la carte
+Debug-Modus: ganze Karte rendern
+Modalità debug: renderizza l'intera mappa
+Modo debug: renderizar o mapa inteiro
+
+Rocket Launcher in every Story level
+Lance-roquettes dans tous les niveaux Histoire
+Raketenwerfer in jedem Story-Level
+Lanciarazzi in ogni livello Storia
+Lança-foguetes em todos os níveis de História
+
+Beta Reborn weapons (resourcepacks/beta_reborn)
+Armes de Beta Reborn (resourcepacks/beta_reborn)
+Beta-Reborn-Waffen (resourcepacks/beta_reborn)
+Armi di Beta Reborn (resourcepacks/beta_reborn)
+Armas do Beta Reborn (resourcepacks/beta_reborn)
+
+Christmas Edition textures (resourcepacks/xmas)
+Textures de la Christmas Edition (resourcepacks/xmas)
+Texturen der Christmas Edition (resourcepacks/xmas)
+Texture della Christmas Edition (resourcepacks/xmas)
+Texturas da Christmas Edition (resourcepacks/xmas)
+
+Infinite health
+Vie infinie
+Unendliche Gesundheit
+Salute infinita
+Vida infinita
+
+One hit in Story
+Un seul coup en Histoire
+Ein Treffer im Story-Modus
+Un solo colpo in Storia
+Um só golpe em História
+
+Gyro aiming (DualSense, DualShock 4, Switch Pro)
+Visée au gyroscope (DualSense, DualShock 4, Switch Pro)
+Zielen per Gyroskop (DualSense, DualShock 4, Switch Pro)
+Mira con giroscopio (DualSense, DualShock 4, Switch Pro)
+Pontaria por giroscópio (DualSense, DualShock 4, Switch Pro)
+
+Gyro speed
+Vitesse du gyroscope
+Gyroskop-Geschwindigkeit
+Velocità del giroscopio
+Velocidade do giroscópio
+
+TimeSplitters 2 - settings (F1)
+TimeSplitters 2 - réglages (F1)
+TimeSplitters 2 - Einstellungen (F1)
+TimeSplitters 2 - impostazioni (F1)
+TimeSplitters 2 - definições (F1)
+
+Graphics
+Graphismes
+Grafik
+Grafica
+Gráficos
+
+Audio
+Audio
+Audio
+Audio
+Áudio
+
+Controls
+Commandes
+Steuerung
+Controlli
+Controlos
+
+Gameplay
+Gameplay
+Spielablauf
+Giocabilità
+Jogabilidade
+
+Move forward
+Avancer
+Vorwärts
+Avanti
+Avançar
+
+Move back
+Reculer
+Rückwärts
+Indietro
+Recuar
+
+Strafe left
+Pas à gauche
+Nach links gleiten
+Passo a sinistra
+Passo à esquerda
+
+Strafe right
+Pas à droite
+Nach rechts gleiten
+Passo a destra
+Passo à direita
+
+Fire (right trigger)
+Tirer (gâchette droite)
+Feuern (rechter Trigger)
+Spara (grilletto destro)
+Disparar (gatilho direito)
+
+Aim (left trigger)
+Viser (gâchette gauche)
+Zielen (linker Trigger)
+Mira (grilletto sinistro)
+Apontar (gatilho esquerdo)
+
+Use (A button)
+Utiliser (bouton A)
+Benutzen (A-Taste)
+Usa (pulsante A)
+Usar (botão A)
+
+B button (back in menus; unused in game)
+Bouton B (retour dans les menus ; inutilisé en jeu)
+B-Taste (zurück in Menüs; im Spiel unbenutzt)
+Pulsante B (indietro nei menu; inutilizzato in gioco)
+Botão B (voltar nos menus; sem uso em jogo)
+
+Crouch (X button)
+S'accroupir (bouton X)
+Ducken (X-Taste)
+Abbassati (pulsante X)
+Agachar (botão X)
+
+Reload (Y button)
+Recharger (bouton Y)
+Nachladen (Y-Taste)
+Ricarica (pulsante Y)
+Recarregar (botão Y)
+
+Black button (unused by default)
+Bouton noir (inutilisé par défaut)
+Schwarze Taste (standardmäßig unbenutzt)
+Pulsante nero (inutilizzato di default)
+Botão preto (sem uso por defeito)
+
+White button (unused by default)
+Bouton blanc (inutilisé par défaut)
+Weiße Taste (standardmäßig unbenutzt)
+Pulsante bianco (inutilizzato di default)
+Botão branco (sem uso por defeito)
+
+Zoom in with scope (D-pad up)
+Zoom + avec lunette (croix haut)
+Zoom + mit Zielfernrohr (Steuerkreuz oben)
+Zoom + con mirino (croce su)
+Zoom + com mira (cruzeta cima)
+
+Zoom out with scope (D-pad down)
+Zoom - avec lunette (croix bas)
+Zoom - mit Zielfernrohr (Steuerkreuz unten)
+Zoom - con mirino (croce giù)
+Zoom - com mira (cruzeta baixo)
+
+Previous weapon (D-pad left)
+Arme précédente (croix gauche)
+Vorherige Waffe (Steuerkreuz links)
+Arma precedente (croce sinistra)
+Arma anterior (cruzeta esquerda)
+
+Next weapon (D-pad right)
+Arme suivante (croix droite)
+Nächste Waffe (Steuerkreuz rechts)
+Arma successiva (croce destra)
+Arma seguinte (cruzeta direita)
+
+Left stick click (unused by default)
+Clic du stick gauche (inutilisé par défaut)
+Linken Stick drücken (standardmäßig unbenutzt)
+Pressione stick sinistro (inutilizzato di default)
+Premir stick esquerdo (sem uso por defeito)
+
+Alternate fire (right stick click)
+Tir alternatif (clic du stick droit)
+Alternativfeuer (rechter Stick gedrückt)
+Fuoco alternativo (pressione stick destro)
+Disparo alternativo (stick direito premido)
+
+Weapon {} (of those you carry, in order)
+Arme {} (parmi celles que vous portez, dans l'ordre)
+Waffe {} (von den mitgeführten, der Reihe nach)
+Arma {} (tra quelle che porti, in ordine)
+Arma {} (das que leva, por ordem)

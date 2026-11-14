@@ -1,0 +1,358 @@
+// the settings file beside the exe
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+
+#include <algorithm>
+#include <atomic>
+#include <cwchar>
+#include <fstream>
+#include <mutex>
+#include <set>
+#include <sstream>
+
+#include <toml++/toml.hpp>
+
+#include "app/app.h"
+#include "core/log.h"
+
+namespace app {
+
+namespace {
+
+const char* kModes[] = {"fullscreen", "borderless", "windowed"};
+// the aspect setting's names and fractions; auto takes the output's
+const char* kAspects[] = {"auto", "4:3", "16:9", "16:10", "21:9", "32:9"};
+constexpr uint32_t kAspectFractions[][2] = {{0, 0}, {4, 3}, {16, 9}, {16, 10}, {64, 27}, {32, 9}};
+constexpr uint32_t kAspectCount = sizeof(kAspects) / sizeof(kAspects[0]);
+// the language setting's names, by XC_LANGUAGE (0 unused)
+const char* kLanguages[] = {"", "english", "japanese", "german", "french", "spanish", "italian"};
+constexpr uint32_t kLanguageCount = sizeof(kLanguages) / sizeof(kLanguages[0]);
+
+std::filesystem::path File() { return ExeDir() / kGame.settings; }
+
+}  // namespace
+
+Settings& Get() {
+    static Settings s;
+    return s;
+}
+
+void Load() {
+    Settings& s = Get();
+    toml::table t;
+    std::error_code ec;
+    s.fresh = !std::filesystem::exists(File(), ec);
+    try {
+        t = toml::parse_file(File().string());
+    } catch (...) {
+        return;
+    }
+    std::string mode = t["display_mode"].value_or(std::string(kModes[uint32_t(s.display_mode)]));
+    for (uint32_t i = 0; i < 3; i++)
+        if (mode == kModes[i]) s.display_mode = DisplayMode(i);
+    // no borderless mode any more: the full-screen one at the desktop's size is the same picture
+    if (s.display_mode == DisplayMode::Borderless) s.display_mode = DisplayMode::Fullscreen;
+    s.width = t["width"].value_or(s.width);
+    s.height = t["height"].value_or(s.height);
+    // at most the output's own: past it the scene is supersampled, at a frame rate few GPUs keep
+    s.render_percent = std::clamp<uint32_t>(t["render_percent"].value_or(s.render_percent), 1, 1600);
+    // a settings file from before the fitting: the scale there is the player's own, kept
+    s.render_fitted = t["render_fitted"].value_or(true);
+    s.fps_cap = t["fps_cap"].value_or(s.fps_cap);
+    s.vsync = t["vsync"].value_or(s.vsync);
+    s.low_latency = t["low_latency"].value_or(s.low_latency);
+    s.seal_seams = t["seal_seams"].value_or(s.seal_seams);
+    s.depth_ties = t["depth_ties"].value_or(s.depth_ties);
+    s.ao = std::min<uint32_t>(t["ambient_occlusion"].value_or(s.ao), 2);
+    s.aniso = t["anisotropic_filtering"].value_or(s.aniso);
+    // MSAA's samples and the edge smoothing apart; a file from before edge_smoothing has the smoothing in msaa (1
+    // FXAA, 2 SMAA, 4 and up the MSAA no longer offered then: FXAA), and no MSAA
+    if (auto edge = t["edge_smoothing"].value<uint32_t>()) {
+        s.edge_aa = std::min<uint32_t>(*edge, 2);
+        uint32_t msaa = t["msaa"].value_or(s.msaa);
+        s.msaa = msaa >= 8 ? 8 : msaa >= 4 ? 4 : msaa >= 2 ? 2 : 0;
+    } else {
+        uint32_t old = t["msaa"].value_or(0u);
+        s.edge_aa = old > 2 ? 1 : old;
+        s.msaa = 0;
+    }
+    s.frame_interp = t["frame_interp"].value_or(s.frame_interp);
+    s.fog = t["fog"].value_or(s.fog);
+    s.heat_haze = t["heat_haze"].value_or(s.heat_haze);
+    s.motion_trails = t["motion_trails"].value_or(s.motion_trails);
+    s.weather_trails = t["weather_trails"].value_or(s.weather_trails);
+    s.atmosphere_haze = t["atmosphere_haze"].value_or(s.atmosphere_haze);
+    s.smooth_lighting = t["smooth_lighting"].value_or(s.smooth_lighting);
+    s.brightness = std::clamp<uint32_t>(t["brightness"].value_or(s.brightness), 50, 150);
+    s.saturation = std::clamp<uint32_t>(t["saturation"].value_or(s.saturation), 50, 200);
+    s.contrast = std::clamp<uint32_t>(t["contrast"].value_or(s.contrast), 50, 150);
+    s.hdr = t["hdr"].value_or(s.hdr);
+    s.hdr_white = t["hdr_white"].value_or(s.hdr_white);
+    if (s.hdr_white) s.hdr_white = std::clamp<uint32_t>(s.hdr_white, 80, 500);
+    s.hdr_peak = t["hdr_peak"].value_or(s.hdr_peak);
+    if (s.hdr_peak) s.hdr_peak = std::clamp<uint32_t>(s.hdr_peak, 200, 10000);
+    std::string aspect = t["aspect_ratio"].value_or(std::string(kAspects[s.aspect]));
+    for (uint32_t i = 0; i < kAspectCount; i++)
+        if (aspect == kAspects[i]) s.aspect = i;
+    std::string language = t["language"].value_or(std::string(kLanguages[s.language]));
+    for (uint32_t i = 1; i < kLanguageCount; i++)
+        if (language == kLanguages[i]) s.language = i;
+    s.join_ip = t["join_ip"].value_or(s.join_ip);
+    std::string link = t["link"].value_or(std::string(s.link_mode == 1 ? "host" : s.link_mode == 2 ? "join" : "off"));
+    s.link_mode = link == "host" ? 1 : link == "join" ? 2 : 0;
+    s.link_address = t["link_address"].value_or(s.link_address);
+    s.link_port = std::clamp<uint32_t>(t["link_port"].value_or(s.link_port), 1, 65535);
+    s.monitor = t["monitor"].value_or(s.monitor);
+    s.pause_unfocused = t["pause_unfocused"].value_or(s.pause_unfocused);
+    s.audio_out = std::min<uint32_t>(t["audio_output"].value_or(s.audio_out), 3);
+    s.audio_boost = std::min<uint32_t>(t["audio_boost_db"].value_or(s.audio_boost), 12);
+    for (const Option& o : kGame.options) {
+        if (o.flag) *o.flag = t[o.key].value_or(*o.flag);
+        else *o.value = t[o.key].value_or(*o.value);
+    }
+    if (kGame.load) kGame.load(&t);
+}
+
+namespace {
+
+toml::table Table() {
+    const Settings& s = Get();
+    toml::table t{{"display_mode", kModes[uint32_t(s.display_mode)]},
+                  {"width", int64_t(s.width)},
+                  {"height", int64_t(s.height)},
+                  {"render_percent", int64_t(s.render_percent)},
+                  {"render_fitted", s.render_fitted},
+                  {"fps_cap", int64_t(s.fps_cap)},
+                  {"vsync", s.vsync},
+                  {"low_latency", s.low_latency},
+                  {"seal_seams", s.seal_seams},
+                  {"depth_ties", s.depth_ties},
+                  {"ambient_occlusion", int64_t(s.ao)},
+                  {"anisotropic_filtering", int64_t(s.aniso)},
+                  {"msaa", int64_t(s.msaa)},
+                  {"edge_smoothing", int64_t(s.edge_aa)},
+                  {"brightness", int64_t(s.brightness)},
+                  {"saturation", int64_t(s.saturation)},
+                  {"contrast", int64_t(s.contrast)},
+                  {"hdr", s.hdr},
+                  {"hdr_white", int64_t(s.hdr_white)},
+                  {"hdr_peak", int64_t(s.hdr_peak)},
+                  {"frame_interp", int64_t(s.frame_interp)},
+                  {"fog", s.fog},
+                  {"heat_haze", s.heat_haze},
+                  {"motion_trails", s.motion_trails},
+                  {"weather_trails", s.weather_trails},
+                  {"atmosphere_haze", s.atmosphere_haze},
+                  {"smooth_lighting", s.smooth_lighting},
+                  {"aspect_ratio", kAspects[std::min(s.aspect, kAspectCount - 1)]},
+                  {"language", kLanguages[std::clamp<uint32_t>(s.language, 1, kLanguageCount - 1)]},
+                  {"join_ip", s.join_ip},
+                  {"link", s.link_mode == 1 ? "host" : s.link_mode == 2 ? "join" : "off"},
+                  {"link_address", s.link_address},
+                  {"link_port", int64_t(s.link_port)},
+                  {"monitor", s.monitor},
+                  {"pause_unfocused", s.pause_unfocused},
+                  {"audio_output", int64_t(s.audio_out)},
+                  {"audio_boost_db", int64_t(s.audio_boost)}};
+    for (const Option& o : kGame.options) {
+        if (o.flag) t.insert(o.key, *o.flag);
+        else t.insert(o.key, int64_t(*o.value));
+    }
+    if (kGame.save) kGame.save(&t);
+    return t;
+}
+
+// the settings as last logged or saved: a save logs the lines that changed since, so a performance log shows what
+// each stretch of it was played with
+std::string g_logged;
+
+std::string Text() {
+    std::ostringstream text;
+    text << Table();
+    return text.str();
+}
+
+}  // namespace
+
+void Save() {
+    std::string text = Text();
+    // written beside the real file and renamed over it, so a crash mid save keeps the old settings (after
+    // TGP482/XboxXBE-Recomp b848b1b)
+    std::filesystem::path tmp = File();
+    tmp += ".tmp";
+    {
+        std::ofstream f(tmp);
+        f << text << "\n";
+        f.close();
+        if (f) MoveFileExW(tmp.c_str(), File().c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
+    }
+    if (!g_logged.empty() && text != g_logged) {
+        std::set<std::string> before;
+        std::istringstream old(g_logged), now(text);
+        for (std::string line; std::getline(old, line);) before.insert(line);
+        std::string changed;
+        for (std::string line; std::getline(now, line);)
+            if (!line.empty() && line[0] != '[' && !before.count(line)) changed += (changed.empty() ? "" : ", ") + line;
+        if (!changed.empty()) LOGR("settings: %s", changed.c_str());
+    }
+    g_logged = text;
+}
+
+void LogSettings() {
+    g_logged = Text();
+    std::istringstream lines(g_logged);
+    LOGR("Settings:");
+    for (std::string line; std::getline(lines, line);)
+        if (!line.empty()) LOGR("  %s", line.c_str());
+}
+
+std::vector<MonitorInfo> Monitors() {
+    std::vector<MonitorInfo> out;
+    EnumDisplayMonitors(
+        nullptr, nullptr,
+        [](HMONITOR mon, HDC, LPRECT, LPARAM p) -> BOOL {
+            MONITORINFOEXW mi{};
+            mi.cbSize = sizeof(mi);
+            if (!GetMonitorInfoW(mon, &mi)) return TRUE;
+            MonitorInfo m{};
+            for (const wchar_t* c = mi.szDevice; *c; c++) m.device += char(*c);
+            const wchar_t* digits = std::wcsstr(mi.szDevice, L"DISPLAY");
+            m.number = digits ? uint32_t(_wtoi(digits + 7)) : 0;
+            DEVMODEW dm{};
+            dm.dmSize = sizeof(dm);
+            if (EnumDisplaySettingsW(mi.szDevice, ENUM_REGISTRY_SETTINGS, &dm)) m.width = dm.dmPelsWidth, m.height = dm.dmPelsHeight;
+            m.primary = (mi.dwFlags & MONITORINFOF_PRIMARY) != 0;
+            reinterpret_cast<std::vector<MonitorInfo>*>(p)->push_back(m);
+            return TRUE;
+        },
+        LPARAM(&out));
+    std::sort(out.begin(), out.end(), [](const MonitorInfo& a, const MonitorInfo& b) { return a.number < b.number; });
+    return out;
+}
+
+void* TargetMonitor() {
+    struct Find {
+        std::wstring device;
+        HMONITOR found = nullptr;
+    } find;
+    for (char c : Get().monitor) find.device += wchar_t(c);
+    if (!find.device.empty())
+        EnumDisplayMonitors(
+            nullptr, nullptr,
+            [](HMONITOR mon, HDC, LPRECT, LPARAM p) -> BOOL {
+                auto* f = reinterpret_cast<Find*>(p);
+                MONITORINFOEXW mi{};
+                mi.cbSize = sizeof(mi);
+                if (GetMonitorInfoW(mon, &mi) && f->device == mi.szDevice) {
+                    f->found = mon;
+                    return FALSE;
+                }
+                return TRUE;
+            },
+            LPARAM(&find));
+    // the one picked is unplugged, or none was: the primary
+    return find.found ? find.found : MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY);
+}
+
+Mode Desktop() {
+    HMONITOR mon = static_cast<HMONITOR>(TargetMonitor());
+    MONITORINFOEXW mi{};
+    mi.cbSize = sizeof(mi);
+    DEVMODEW dm{};
+    dm.dmSize = sizeof(dm);
+    if (GetMonitorInfoW(mon, &mi) && EnumDisplaySettingsW(mi.szDevice, ENUM_REGISTRY_SETTINGS, &dm))
+        return {dm.dmPelsWidth, dm.dmPelsHeight};
+    return {uint32_t(GetSystemMetrics(SM_CXSCREEN)), uint32_t(GetSystemMetrics(SM_CYSCREEN))};
+}
+
+// A window's own client area: in windowed mode the picture takes its shape (no bars), whatever size the window is dragged to
+Mode WindowClient() {
+    if (Get().display_mode != DisplayMode::Windowed) return {0, 0};
+    HWND w = static_cast<HWND>(Window());
+    RECT r{};
+    if (!w || !GetClientRect(w, &r) || r.right <= 64 || r.bottom <= 64) return {0, 0};
+    return {uint32_t(r.right), uint32_t(r.bottom)};
+}
+
+Mode Output() {
+    const Settings& s = Get();
+    if (Mode c = WindowClient(); c.width) return c;
+    if (s.width && s.height) return {s.width, s.height};
+    return Desktop();
+}
+
+void AspectFraction(uint32_t& w, uint32_t& h) {
+    // asked per frame and per HUD quad: the desktop mode lookup only runs when the resolution setting changes
+    static std::atomic<uint64_t> key{~0ull};
+    static std::atomic<uint64_t> fraction{uint64_t(16) << 32 | 9};
+    const Settings& s = Get();
+    if (s.aspect && s.aspect < kAspectCount) {
+        w = kAspectFractions[s.aspect][0];
+        h = kAspectFractions[s.aspect][1];
+        return;
+    }
+    Mode client = WindowClient();
+    uint64_t k = (uint64_t(s.width) << 32 | s.height) ^ (uint64_t(client.width) * 0x9E3779B1u << 20) ^ uint64_t(client.height) << 7;
+    if (key.exchange(k) != k) {
+        Mode m = Output();
+        uint32_t a = std::max(m.width, 1u), b = std::max(m.height, 1u);
+        // narrower than 4:3: the 4:3 picture, bars above and below
+        if (uint64_t(a) * 3 < uint64_t(b) * 4) a = 4, b = 3;
+        uint32_t x = a, y = b;
+        while (y) {
+            x %= y;
+            std::swap(x, y);
+        }
+        fraction = uint64_t(a / x) << 32 | (b / x);
+    }
+    uint64_t f = fraction;
+    w = uint32_t(f >> 32);
+    h = uint32_t(f);
+}
+
+float Aspect() {
+    uint32_t w, h;
+    AspectFraction(w, h);
+    return float(w) / float(h);
+}
+
+bool Widescreen() { return Aspect() > 4.0f / 3.0f + 0.01f; }
+
+// Output for every frame: the desktop mode lookup reads the registry, so it runs again only when the resolution
+// setting or the window's monitor changes (after TGP482/XboxXBE-Recomp 16bf1cd)
+Mode CachedOutput() {
+    static std::mutex lock;
+    static uint32_t width = 0, height = 0;
+    static HMONITOR monitor = nullptr;
+    static Mode mode{};
+    const Settings& s = Get();
+    HMONITOR now = MonitorFromWindow(static_cast<HWND>(Window()), MONITOR_DEFAULTTOPRIMARY);
+    std::lock_guard<std::mutex> guard(lock);
+    Mode client = WindowClient();
+    uint32_t cw = client.width ^ (client.height << 16);
+    static uint32_t client_key = 0;
+    if (s.width != width || s.height != height || now != monitor || !mode.height || cw != client_key) {
+        width = s.width, height = s.height, monitor = now, client_key = cw;
+        mode = Output();
+    }
+    return mode;
+}
+
+Scale2 RenderScale(uint32_t guest_width, uint32_t guest_height) {
+    if (!guest_width || !guest_height) return {1.0f, 1.0f};
+    // the picture as the output shows it, bars left out
+    Mode m = CachedOutput();
+    float aspect = Aspect();
+    float w = std::min(float(m.width), m.height * aspect);
+    // over 100% the scene is drawn larger than the output and shrunk to it, as wide as the GPU's textures go (x8 the
+    // console's 480 lines is 3840 high, 6827 wide at 16:9)
+    float k = std::min(Get().render_percent / 100.0f, std::min(15360.0f / w, 8192.0f / (w / aspect)));
+    return {std::max(w * k / guest_width, 0.1f), std::max(w / aspect * k / guest_height, 0.1f)};
+}
+
+}  // namespace app

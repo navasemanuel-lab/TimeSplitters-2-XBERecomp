@@ -1,0 +1,745 @@
+# Recompiler input for default.xbe, written by xbe_symbols
+
+[xbe]
+path = "assets/default.xbe"
+title = 0x4553000A
+entry = 0x1CEF99
+xdk = 4721
+out = "generated/game"
+partitions = 64
+code_sections = [".text", "D3D", "XGRPH", "DSOUND", "XNET", "XPP"]
+
+# extra entry points
+[functions]
+
+# functions the host replaces or calls by name, 0 where the image has none
+[symbols]
+bind                                                 = 0x20BA9D
+CDevice_KickOff                                      = 0x1DFE30
+CDirectSoundStream_AddRef                            = 0x1FED9B
+CDirectSoundStream_Constructor                       = 0x1FFEEB
+CDirectSoundStream_Discontinuity                     = 0x1FEE97
+CDirectSoundStream_Flush                             = 0x1FEEE4
+CDirectSoundStream_GetInfo                           = 0x1FEE30
+CDirectSoundStream_Pause                             = 0x1FEFF9
+CDirectSoundStream_Process                           = 0x1FEF82
+CDirectSoundStream_Release                           = 0x1FEDE2
+CDirectSoundStream_SetVolume                         = 0x1FF10E
+D3D_BlockOnResource                                  = 0x1E0300
+D3D_BlockOnTime                                      = 0x1DFFD0
+D3D_KickOffAndWaitForIdle                            = 0x1E02E0
+D3D_SetFence                                         = 0x1DFF20
+D3DDevice_Begin                                      = 0x1DF540
+D3DDevice_BlockOnFence                               = 0x1DAF50
+D3DDevice_BlockUntilVerticalBlank                    = 0x1DAFE0
+D3DDevice_Clear                                      = 0x1DAA20
+D3DDevice_CopyRects                                  = 0x1DB2B0
+D3DDevice_DrawIndexedVertices                        = 0x1DF230
+D3DDevice_DrawVertices                               = 0x1DF190
+D3DDevice_End                                        = 0x1DF580
+D3DDevice_GetBackBuffer2                             = 0x1DB1B0
+D3DDevice_InsertFence                                = 0x1DB0C0
+D3DDevice_LoadVertexShader                           = 0x1DE100
+D3DDevice_MakeSpace                                  = 0x1E0290
+D3DDevice_SelectVertexShader                         = 0x1DE1D0
+D3DDevice_SetFlickerFilter                           = 0x1DB010
+D3DDevice_SetPixelShader                             = 0x1DF600
+D3DDevice_SetPixelShaderConstant                     = 0x1DF800
+D3DDevice_SetRenderState_BackFillMode                = 0x1DC6B0
+D3DDevice_SetRenderState_CullMode                    = 0x1DC340
+D3DDevice_SetRenderState_DoNotCullUncompressed       = 0x1DD660
+D3DDevice_SetRenderState_Dxt1NoiseEnable             = 0x1DC500
+D3DDevice_SetRenderState_EdgeAntiAlias               = 0x1DC270
+D3DDevice_SetRenderState_FillMode                    = 0x1DC660
+D3DDevice_SetRenderState_FogColor                    = 0x1DC2F0
+D3DDevice_SetRenderState_FrontFace                   = 0x1DC3B0
+D3DDevice_SetRenderState_LineWidth                   = 0x1DC490
+D3DDevice_SetRenderState_LogicOp                     = 0x1DC600
+D3DDevice_SetRenderState_MultiSampleAntiAlias        = 0x1DD700
+D3DDevice_SetRenderState_MultiSampleMask             = 0x1DD780
+D3DDevice_SetRenderState_MultiSampleMode             = 0x1DD680
+D3DDevice_SetRenderState_MultiSampleRenderTargetMode = 0x1DD6C0
+D3DDevice_SetRenderState_NormalizeNormals            = 0x1DC3F0
+D3DDevice_SetRenderState_OcclusionCullEnable         = 0x1DD540
+D3DDevice_SetRenderState_PSTextureModes              = 0x1DBF40
+D3DDevice_SetRenderState_RopZCmpAlwaysRead           = 0x1DD620
+D3DDevice_SetRenderState_RopZRead                    = 0x1DD640
+D3DDevice_SetRenderState_SampleAlpha                 = 0x1DD7D0
+D3DDevice_SetRenderState_ShadowFunc                  = 0x1DC2B0
+D3DDevice_SetRenderState_Simple                      = 0x1DBF70
+D3DDevice_SetRenderState_StencilCullEnable           = 0x1DD5B0
+D3DDevice_SetRenderState_StencilEnable               = 0x1DD410
+D3DDevice_SetRenderState_StencilFail                 = 0x1DD4A0
+D3DDevice_SetRenderState_TextureFactor               = 0x1DC430
+D3DDevice_SetRenderState_TwoSidedLighting            = 0x1DC710
+D3DDevice_SetRenderState_VertexBlend                 = 0x1DC780
+D3DDevice_SetRenderState_YuvEnable                   = 0x1DD510
+D3DDevice_SetRenderState_ZEnable                     = 0x1DD380
+D3DDevice_SetRenderStateNotInline                    = 0x1DBFA0
+D3DDevice_SetRenderTarget                            = 0x1DAE10
+D3DDevice_SetScissors                                = 0x1DBA60
+D3DDevice_SetScreenSpaceOffset                       = 0x1DBC00
+D3DDevice_SetShaderConstantMode                      = 0x1DE250
+D3DDevice_SetSoftDisplayFilter                       = 0x1DB060
+D3DDevice_SetStreamSource                            = 0x1DE070
+D3DDevice_SetTexture                                 = 0x1DB6E0
+D3DDevice_SetTextureStageStateNotInline              = 0x1DC9D0
+D3DDevice_SetTextureState_BorderColor                = 0x1DC950
+D3DDevice_SetTextureState_BumpEnv                    = 0x1DC8E0
+D3DDevice_SetTextureState_ColorKeyColor              = 0x1DC990
+D3DDevice_SetTextureState_TexCoordIndex              = 0x1DC7D0
+D3DDevice_SetTransform                               = 0x1DAE30
+D3DDevice_SetVertexShader                            = 0x1DE490
+D3DDevice_SetVertexShaderConstant1                   = 0x1DDE40
+D3DDevice_SetVertexShaderConstant4                   = 0x1DDEA0
+D3DDevice_SetVertexShaderConstantNotInlineFast       = 0x1DDF50
+D3DDevice_SetViewport                                = 0x1DB580
+D3DDevice_Swap                                       = 0x1DEFF0
+Direct3D_CreateDevice                                = 0x1DDA50
+DirectSoundCreate                                    = 0x20054D
+DirectSoundCreateStream                              = 0x200594
+DirectSoundDoWork                                    = 0x1FF23D
+DirectSoundUseLightHRTF                              = 0x1FE776
+IDirectSound_CommitDeferredSettings                  = 0x1FF808
+IDirectSound_CreateSoundBuffer                       = 0x200393
+IDirectSound_DownloadEffectsImage                    = 0x1FF160
+IDirectSound_SetDopplerFactor                        = 0x1FFFBA
+IDirectSound_SetI3DL2Listener                        = 0x20005D
+IDirectSound_SetOrientation                          = 0x1FFFDE
+IDirectSound_SetPosition                             = 0x200028
+IDirectSoundBuffer_GetStatus                         = 0x1FF217
+IDirectSoundBuffer_Play                              = 0x1FF1BF
+IDirectSoundBuffer_Release                           = 0x1FE760
+IDirectSoundBuffer_SetBufferData                     = 0x20007D
+IDirectSoundBuffer_SetFrequency                      = 0x1FF820
+IDirectSoundBuffer_SetMaxDistance                    = 0x1FF83C
+IDirectSoundBuffer_SetMinDistance                    = 0x1FF860
+IDirectSoundBuffer_SetPosition                       = 0x1FF884
+IDirectSoundBuffer_SetRolloffCurve                   = 0x1FF8B9
+IDirectSoundBuffer_SetVolume                         = 0x1FF187
+IDirectSoundBuffer_Stop                              = 0x1FF1E3
+ioctlsocket                                          = 0x20B256
+MU_Init                                              = 0x2142A4
+recv                                                 = 0x20BF0F
+socket                                               = 0x20C4D9
+WSAStartup                                           = 0x20AF80
+XInitDevices                                         = 0x2143AC
+XInputClose                                          = 0x2154AE
+XInputGetState                                       = 0x215697
+XInputOpen                                           = 0x215458
+XInputSetState                                       = 0x215706
+XLaunchNewImageA                                     = 0x1CED3D
+XMountUtilityDrive                                   = 0x1CE73E
+XNetGetEthernetLinkStatus                            = 0x1D267C
+XNetStartup                                          = 0x20AF69
+
+D3DDevice_LoadVertexShaderProgram                    = 0x1DE160
+D3DDevice_SelectVertexShaderDirect                   = 0x1DDE00
+XInputGetCapabilities                                = 0x2154BA
+
+D3D_InitDefaultState                                 = 0x1E1660
+
+# not in TS2: the host traps if the game calls one
+BinkDoFrame                                          = 0
+BinkGetSummary                                       = 0
+BinkNextFrame                                        = 0
+BinkWait                                             = 0
+CDirectSoundStream_FlushEx                           = 0
+CDirectSoundStream_GetStatus                         = 0x1FEF31
+CDirectSoundStream_SetFilter                         = 0
+CDirectSoundStream_SetFormat                         = 0
+CDirectSoundStream_SetFrequency                      = 0
+CDirectSoundStream_SetHeadroom                       = 0
+CDirectSoundStream_SetI3DL2Source                    = 0
+CDirectSoundStream_SetMaxDistance                    = 0
+CDirectSoundStream_SetMinDistance                    = 0
+CDirectSoundStream_SetMixBinVolumes                  = 0
+CDirectSoundStream_SetMixBins                        = 0
+CDirectSoundStream_SetPosition                       = 0
+CDirectSoundStream_SetRolloffCurve                   = 0
+CDirectSoundStream_SetVelocity                       = 0
+D3D_FvfShader                                        = 0
+D3D_IndexData                                        = 0
+DirectSoundCreateBuffer                              = 0
+DirectSoundUseFullHRTF                               = 0
+IDirectSoundBuffer_GetCurrentPosition                = 0
+IDirectSoundBuffer_Lock                              = 0
+IDirectSoundBuffer_Pause                             = 0x1FF1FB
+IDirectSoundBuffer_SetAllParameters                  = 0
+IDirectSoundBuffer_SetCurrentPosition                = 0
+IDirectSoundBuffer_SetFilter                         = 0
+IDirectSoundBuffer_SetFormat                         = 0
+IDirectSoundBuffer_SetHeadroom                       = 0
+IDirectSoundBuffer_SetI3DL2Source                    = 0
+IDirectSoundBuffer_SetLoopRegion                     = 0
+IDirectSoundBuffer_SetMixBinVolumes                  = 0
+IDirectSoundBuffer_SetMixBins                        = 0
+IDirectSoundBuffer_SetOutputBuffer                   = 0
+IDirectSoundBuffer_SetPlayRegion                     = 0
+IDirectSoundBuffer_SetVelocity                       = 0
+IDirectSoundBuffer_StopEx                            = 0
+IDirectSoundBuffer_Unlock                            = 0
+IDirectSoundStream_SetEG                             = 0x1FF1A3
+IDirectSound_CommitEffectData                        = 0
+IDirectSound_EnableHeadphones                        = 0
+IDirectSound_GetEffectData                           = 0
+IDirectSound_GetOutputLevels                         = 0
+IDirectSound_GetSpeakerConfig                        = 0
+IDirectSound_Release                                 = 0
+IDirectSound_SetDistanceFactor                       = 0
+IDirectSound_SetEffectData                           = 0
+IDirectSound_SetMixBinHeadroom                       = 0
+IDirectSound_SetRolloffFactor                        = 0
+IDirectSound_SetVelocity                             = 0
+IDirectSound_SynchPlayback                           = 0
+XAudioDownloadEffectsImage                           = 0
+_CIacos                                              = 0
+_CIasin                                              = 0
+crt_pow                                              = 0
+crt_sin                                              = 0x1D3B70
+crt_cos                                              = 0x1D3AC0
+crt_sqrt                                             = 0x1D3C20
+crt_asin                                             = 0x1D3594
+crt_acos                                             = 0x1D28FC
+
+# not in TS2: the host traps if the game calls one
+Lock2DSurface                                        = 0
+D3DDevice_SetLight                                   = 0
+D3DDevice_LightEnable                                = 0
+
+[data]
+D3D_Device                  = 0x1E92C0
+D3D_pDevice                 = 0x1E8E18
+D3D_DirtyFlags              = 0x1E8E24
+D3D_DeferredTextureState    = 0x1E8E28
+D3D_RenderState             = 0x1E9028
+D3D_Streams                 = 0x1EBEF0
+D3D_SimpleRenderStateEncode = 0x221CB8
+XPP_GamepadType             = 0x2140D4
+XPP_MemoryUnitType          = 0x2141A8
+DSound_StreamVtable         = 0x29F6FC
+DSound_StreamVtable2        = 0x29F6F0
+
+# argument locations in API order for functions a link time code generated library compiled with another
+# convention: a register (eax ebx ecx edx esi edi ebp) or "stack" for the next stack slot, which the callee pops
+[abi]
+
+
+# True 1:1 mouse aim (src/game/aim.cpp): the look update's stick multiplies
+[[hook]]
+at = 0x148FE5
+call = "MouseYaw"
+[[hook]]
+at = 0x14907B
+call = "MousePitch"
+[[hook]]
+at = 0x148FFE
+call = "LookAhead"
+[[hook]]
+at = 0x144A5A
+call = "FreeAimSway"
+[[hook]]
+at = 0x148A60
+call = "MouseInPlay"
+
+# a gun or camera the player controls turns by the same stick pair (src/game/aim.cpp)
+[[hook]]
+at = 0x148E96
+call = "MouseGunPitch"
+
+[[hook]]
+at = 0x148EC4
+call = "MouseGunYaw"
+
+# any aspect ratio (src/game/aim.cpp): the projection's end, before its ret
+[[hook]]
+at = 0x32DC8
+call = "ProjectionAspect"
+
+# the other perspective lenses built from the screen's shape (decals, ...): widened as the main one
+[[hook]]
+at = 0x5856F
+call = "WidenLens"
+
+[[hook]]
+at = 0x593E2
+call = "WidenLens"
+
+[[hook]]
+at = 0x8F64C
+call = "WidenLens"
+
+# Story loads every character's whole pain and death voice, as the arcade does (src/game/voices.cpp)
+[[hook]]
+at = 0x4289D
+call = "StoryVoicesAll"
+on_true = 0x4289F
+
+[[hook]]
+at = 0x53894
+call = "StoryVoicesAll"
+on_true = 0x538D1
+
+# the death sound the game plays picks among half of them in Story: all of them
+[[hook]]
+at = 0x53985
+call = "StoryVoicesAll"
+on_true = 0x539C2
+
+# a Quit line in the main menu (src/game/quit.cpp)
+[[hook]]
+at = 0x99ED4
+call = "MainMenuQuit"
+
+[[hook]]
+at = 0xF1F1D
+call = "MenuItemChosen"
+
+[[hook]]
+at = 0xF1F46
+call = "MainMenuAction"
+
+# an Unlock Everything line in Options > Player Options, before the menu's size is worked out (src/game/unlock_menu.cpp)
+[[hook]]
+at = 0x97D7D
+call = "PlayerOptionsUnlock"
+
+# the whole-list path leaves out the type's extra sound at +0x32 that Story's loads (src/game/voices.cpp)
+[[hook]]
+at = 0x428EB
+call = "StoryVoiceExtra"
+
+# the mouse in the front end's menus (src/game/menu.cpp): the menu update's entry
+[[hook]]
+at = 0xF1900
+call = "MenuTick"
+
+# a frame steps the world once for every vertical blank since the last; one that saw none waits for it (src/game/pace.cpp)
+[[hook]]
+at = 0x1AE009
+call = "FrameBlank"
+
+# a replaced sound longer than the original gets a block of its own size (src/game/sound_pack.cpp)
+[[hook]]
+at = 0x1C71E0
+call = "SoundPackUpgrade"
+
+# Dam and Wild West into the arcade map list (src/game/hidden_levels.cpp)
+[[hook]]
+at = 0x943E8
+call = "HiddenMapEntry"
+
+# the player's HUD: its start and its ends, the tail parts 0xC46B0 and 0xC61F0 included (src/game/ammo_hud.cpp)
+[[hook]]
+at = 0xC92F0
+call = "HudBegin"
+
+# the health and shield arcs' bars, before their last vertex is ended: made taller on a wide screen (src/game/ammo_hud.cpp)
+[[hook]]
+at = 0xC5A4E
+call = "ArcBars"
+
+[[hook]]
+at = 0xC9E4E
+call = "HudEnd"
+
+[[hook]]
+at = 0xC47A1
+call = "HudEnd"
+
+[[hook]]
+at = 0xC6409
+call = "HudEnd"
+
+[[hook]]
+at = 0xC6428
+call = "HudSubEnd"
+
+[[hook]]
+at = 0xC642B
+call = "HudSubEnd"
+
+[[hook]]
+at = 0xC646D
+call = "HudSubEnd"
+
+[[hook]]
+at = 0xC6473
+call = "HudSubEnd"
+
+[[hook]]
+at = 0xC6476
+call = "HudSubEnd"
+
+# Notre Dame into the arcade map list (src/game/hidden_levels.cpp)
+[[hook]]
+at = 0x944C2
+call = "HiddenNotreDame"
+
+[[hook]]
+at = 0x1B7AC6
+call = "TextureKindOther"
+
+
+# The Select Character list (src/game/characters.cpp): the table at 0x2BA840 (127 rows of 0x20 bytes) is read from a copy with
+# 23 more rows, and its row count (0x7F, 0xFE0 bytes) and the lock cache at 0x35BE98 (0x1FC bytes) follow it
+[[imm]]
+at = 0x00087A36
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00087A48
+from = 0x7F
+to = 0x95
+[[imm]]
+at = 0x00087A58
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00087A76
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00087A88
+from = 0x7F
+to = 0x95
+[[imm]]
+at = 0x00087A94
+from = 0x2BA844
+fn = "GameCharTable"
+add = 0x4
+[[imm]]
+at = 0x00087BC4
+from = 0x2BA84C
+fn = "GameCharTable"
+add = 0xC
+[[imm]]
+at = 0x00087BD2
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x00087BE9
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00087BF4
+from = 0x2BA84C
+fn = "GameCharTable"
+add = 0xC
+[[imm]]
+at = 0x00087C02
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x00087C2D
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00087C50
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00087C67
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x0008D038
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x0008E1BC
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x0008E24C
+from = 0x7F
+to = 0x95
+[[imm]]
+at = 0x0008FB1C
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x0008FB2E
+from = 0x7F
+to = 0x95
+[[imm]]
+at = 0x0008FBF1
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x000952C4
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x000952DB
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x0009547D
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00098DE4
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x00098E0D
+from = 0x2BA844
+fn = "GameCharTable"
+add = 0x4
+[[imm]]
+at = 0x00098F10
+from = 0x2BA84C
+fn = "GameCharTable"
+add = 0xC
+[[imm]]
+at = 0x00098F1E
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x00098F40
+from = 0x2BA844
+fn = "GameCharTable"
+add = 0x4
+[[imm]]
+at = 0x00099420
+from = 0x2BA84C
+fn = "GameCharTable"
+add = 0xC
+[[imm]]
+at = 0x0009942E
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x000996D2
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x0009980B
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x0009CC8B
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x0009CC98
+from = 0x7F
+to = 0x95
+[[imm]]
+at = 0x0009CCE6
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x000A3C70
+from = 0x2BA840
+fn = "GameCharTable"
+add = 0x0
+[[imm]]
+at = 0x000A3CDC
+from = 0xFE0
+to = 0x12A0
+[[imm]]
+at = 0x9548C
+from = 0x35BE98
+fn = "GameCharLocks"
+add = 0x0
+[[imm]]
+at = 0x952BD
+from = 0x35BE98
+fn = "GameCharLocks"
+add = 0x0
+[[imm]]
+at = 0x954C4
+from = 0x1FC
+to = 0x254
+
+# The Default Gun's name in the menus that draw it from the names table (src/game/unused_content.cpp)
+[[hook]]
+at = 0x8C71B
+call = "EagleNameEbx"
+on_true = 0x8C71E
+[[hook]]
+at = 0xB5F2D
+call = "EagleNameEdi"
+on_true = 0xB5F30
+[[hook]]
+at = 0x10B6A2
+call = "EagleNameEdi"
+on_true = 0x10B6A5
+
+# The arcade map list (src/game/hidden_levels.cpp): the list at 0x2BD588 (0x30 bytes a map) is read from a copy with one more
+# map, Chemical Plant; its 0x944B6 bound stays the builder's 19, the 0x9C5AE one is the 21 maps' end
+[[imm]]
+at = 0x94206
+from = 0x2BD58C
+fn = "GameArcadeList"
+add = 0x4
+[[imm]]
+at = 0x9426C
+from = 0x2BD590
+fn = "GameArcadeList"
+add = 0x8
+[[imm]]
+at = 0x943E3
+from = 0x2BD58C
+fn = "GameArcadeList"
+add = 0x4
+[[imm]]
+at = 0x944B6
+from = 0x2BD91C
+fn = "GameArcadeList"
+add = 0x394
+[[imm]]
+at = 0x953BC
+from = 0x2BD588
+fn = "GameArcadeList"
+add = 0x0
+[[imm]]
+at = 0x9B7E9
+from = 0x2BD58C
+fn = "GameArcadeList"
+add = 0x4
+[[imm]]
+at = 0x9C589
+from = 0x2BD58C
+fn = "GameArcadeList"
+add = 0x4
+[[imm]]
+at = 0x9C5AE
+from = 0x2BD94C
+fn = "GameArcadeList"
+add = 0x3F4
+[[imm]]
+at = 0x9C5C6
+from = 0x2BD590
+fn = "GameArcadeList"
+add = 0x8
+[[imm]]
+at = 0x1AEA8E
+from = 0x2BD5A4
+fn = "GameArcadeList"
+add = 0x1C
+
+# diagnostic: the time of each step of a level's set-up (src/game/load_timing.cpp)
+[[hook]]
+at = 0x168EB5
+call = "SetupMark_168EB5"
+
+[[hook]]
+at = 0x168EBA
+call = "SetupMark_168EBA"
+
+[[hook]]
+at = 0x168EBF
+call = "SetupMark_168EBF"
+
+[[hook]]
+at = 0x168EC4
+call = "SetupMark_168EC4"
+
+[[hook]]
+at = 0x168EC9
+call = "SetupMark_168EC9"
+
+[[hook]]
+at = 0x168ECE
+call = "SetupMark_168ECE"
+
+[[hook]]
+at = 0x168EEB
+call = "SetupMark_168EEB"
+
+[[hook]]
+at = 0x168EF3
+call = "SetupMark_168EF3"
+
+[[hook]]
+at = 0x168EF8
+call = "SetupMark_168EF8"
+
+[[hook]]
+at = 0x168EFD
+call = "SetupMark_168EFD"
+
+[[hook]]
+at = 0x168F02
+call = "SetupMark_168F02"
+
+[[hook]]
+at = 0x168F0D
+call = "SetupMark_168F0D"
+
+[[hook]]
+at = 0x168F12
+call = "SetupMark_168F12"
+
+[[hook]]
+at = 0x168F17
+call = "SetupMark_168F17"
+
+[[hook]]
+at = 0x168F1C
+call = "SetupMark_168F1C"
+
+[[hook]]
+at = 0x168F21
+call = "SetupMark_168F21"
+
+[[hook]]
+at = 0x168F26
+call = "SetupMark_168F26"
+
+[[hook]]
+at = 0x168F2B
+call = "SetupMark_168F2B"
+
+[[hook]]
+at = 0x168F30
+call = "SetupMark_168F30"
+
+[[hook]]
+at = 0x168F35
+call = "SetupMark_168F35"
+
+[[hook]]
+at = 0x168F84
+call = "SetupMark_168F84"
+
+
+# the loading bar redraws five times a second, not at every second blank: each redraw is a swap that waits (src/game/load_timing.cpp)
+[[hook]]
+at = 0xDCE87
+call = "LoadingBarRate"
+
+# Audio Options and a Video Options line in the Options menu, before its third line is made (src/game/video_menu.cpp)
+[[hook]]
+at = 0x96084
+call = "OptionsVideoRow"
+
+# the profile name keyboard typed on the PC keyboard (src/game/name_entry.cpp)
+[[hook]]
+at = 0x1ACE70
+call = "NameEntryTyping"
+
+# the free camera, F6: the player camera's LookAt takes the flown place and direction (src/game/free_cam.cpp)
+[[hook]]
+at = 0x36D47
+call = "FreeCamLookAt"

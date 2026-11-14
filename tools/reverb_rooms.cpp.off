@@ -1,0 +1,36 @@
+// The reverb of the room the player is in, as TimeSplitters Future Perfect PC sets it: a preset for each room of the
+// level (sound/reverb/overrides/levelN.reverb there, reverb_rooms.inc here) instead of the console's own table, which
+// has a reverb in one level only (Notre Dame; the others hand the DSP -10000, off). The title calls 0x1C6770 with the
+// room number whenever the player's room changes: it is looked at first here. A level with presets gets them (caves,
+// corridors and halls ring, open ground, streets and forests hardly do); a level without keeps the console's calls.
+#include <cstdint>
+
+#include "core/log.h"
+#include "kernel/kernel.h"
+#include "xdk/hle.h"
+
+#include "game/reverb_rooms.inc"
+
+void DsoundRoomReverb(int room, float decay, float hf_ratio, int reflections, float refl_delay, int reverb, float rev_delay);
+void DsoundRoomReverbOff();
+
+// at the entry of the room's reverb step (0x1C6770): [esp + 4] the room number
+void RoomReverbStep(X86Context& ctx, uint8_t*) {
+    int32_t room = int32_t(kernel::R32(ctx.esp + 4));
+    int32_t level = int32_t(kernel::R32(0x4A46EC));
+    static int told = 0;
+    for (const ReverbLevel& l : kReverbLevels) {
+        if (l.level != level) continue;
+        uint32_t p = room >= 0 && room < l.count ? l.rooms[room] : 0;
+        if (!p) {  // a room the level's list leaves out keeps the reverb of the one before
+            if (told++ < 60) LOGR("reverb: level %d room %d is not in the list: unchanged", level, room);
+            return;
+        }
+        const ReverbPreset& r = kReverbPresets[p - 1];
+        if (told++ < 60) LOGR("reverb: level %d room %d preset %u (room %d reflections %d reverb %d decay %.2f)", level, room, p, r.room, r.reflections, r.reverb, r.decay);
+        DsoundRoomReverb(r.room, r.decay, r.hf_ratio, r.reflections, r.refl_delay, r.reverb, r.rev_delay);
+        return;
+    }
+    if (told++ < 60) LOGR("reverb: level %d room %d has no preset: the title's own", level, room);
+    DsoundRoomReverbOff();
+}
