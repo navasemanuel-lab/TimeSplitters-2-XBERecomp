@@ -240,6 +240,15 @@ X86_FUNC(sub_000F0500) {
     static int logged = 0;
     uint32_t text = row >= 0x10000 ? kernel::R32(row + 0x20) : 0;
     if (logged++ < 400 && text >= 0x10000) LOGR("menu: row \"%s\" from %08X", kernel::ReadCString(text, 48).c_str(), from);
+    if (text >= 0x10000) {  // the controller options' rows: to find where the Auto Aim setting lives
+        std::string t = kernel::ReadCString(text, 48);
+        static int dumped = 0;
+        if ((t.find("Aim") != std::string::npos || t.find("Vibration") != std::string::npos) && dumped++ < 8) {
+            LOGR("menu: option row \"%s\" from %08X, row words:", t.c_str(), from);
+            for (uint32_t i = 0; i < 0x30; i += 16)
+                LOGR("menu:   +%02X %08X %08X %08X %08X", i, kernel::R32(row + i), kernel::R32(row + i + 4), kernel::R32(row + i + 8), kernel::R32(row + i + 12));
+        }
+    }
     __imp__sub_000F0500(ctx, base);
 }
 
@@ -655,4 +664,20 @@ void ProfileFooterPatch(X86Context& ctx) {
         kernel::W32(r + 0x34, kernel::CallGuest(ctx, 0xF0500, {r}));
         LOGR("profiles: footer row \"%s\" now says Delete", t.c_str());
     }
+}
+
+
+// The MapMaker editor (the code from 0x108000 to 0x130000: its views, cursor and tools) reads what each pad button is
+// bound to through 0xDA2D0 every frame. A read from there is the editor being up: the mouse then moves its cursor (as the
+// left stick it is moved by) and its clicks are A and B (controls.cpp, mouse.cpp). The menus the editor opens (Editor
+// Settings, saving, loading) are the game's own with the pointer.
+X86_EXTERN_FUNC(__imp__sub_000DA2D0);
+X86_FUNC(sub_000DA2D0) {
+    uint32_t from = kernel::R32(ctx.esp);
+    if (from >= 0x108000 && from < 0x130000) {
+        static int logged = 0;
+        if (logged++ == 0) LOGR("mapmaker: the editor's pad reads seen (from %08X), the mouse moves its cursor", from);
+        mouse::InGameCursor();
+    }
+    __imp__sub_000DA2D0(ctx, base);
 }

@@ -1493,6 +1493,7 @@ private:
     std::unordered_map<uint64_t, uint32_t> light_kind_;
     float lights_now_[42][4] = {};
     float lights_prev_[42][4] = {};
+    float mlights_[6][3][4] = {};  // the model lights (slots 0..5) that last from frame to frame, see Present
     float plights_[8][3][4] = {};  // the particle lights that last from frame to frame, see Present
     // this frame's sprites gathered by place (weighted sums), made into lights as the frame ends
     struct PCluster {
@@ -4430,7 +4431,8 @@ static void ParticleLog(uint32_t kind, int why, uint32_t n, double x = 0, double
 
 // The particles of the scenery are not lights: a fountain's spray. Its texture, by the hash of the first 4096 bytes.
 static bool SceneryParticle(const State& s) {
-    static const uint64_t kScenery[] = {0x8137315DF107D9ECull};
+    // the fountain's spray, the whisky that runs from a shot barrel (Chicago), the bees' wings
+    static const uint64_t kScenery[] = {0x8137315DF107D9ECull, 0x77206820EFDF7AE9ull, 0x3393778A63906B81ull};
     TextureDesc d;
     if (!s.textures[0] || !Describe(s.textures[0], d) || d.cube || d.depth > 1 || TotalSize(d) < 4096) return false;
     uint64_t h = Hash(kernel::HostPtr(d.data), 4096);
@@ -4545,6 +4547,17 @@ void D3D12Backend::CollectParticleLight(const State& s, const Assembled& a, uint
             hit = pcl_n_++;
             pcl_[hit] = {};
             pcl_[hit].kind = kind;
+        }
+        {
+            // which textures give lights (each distinct one once): the hash is what SceneryParticle's list takes
+            static std::set<uint64_t> seen_tex;
+            TextureDesc td;
+            if (s.textures[0] && Describe(s.textures[0], td) && !td.cube && td.depth <= 1 && TotalSize(td) >= 4096) {
+                uint64_t th = Hash(kernel::HostPtr(td.data), 4096);
+                if (seen_tex.size() < 60 && seen_tex.insert(th).second)
+                    LOGR("particle light from texture %016llX (%ux%u fmt %X) kind %u colour %.2f %.2f %.2f", (unsigned long long)th, td.width, td.height,
+                         td.format, kind, col[0], col[1], col[2]);
+            }
         }
         PCluster& k = pcl_[hit];
         for (int i = 0; i < 3; i++) k.p[i] += double(pos[i]) * inten, k.c[i] += double(col[i]) * inten;
@@ -5024,7 +5037,7 @@ void D3D12Backend::DeliverReports() {
 // whatever the setting.
 bool PlainFeedback(const Assembled& a, bool added) {
     if (!a.vertices.empty()) return true;
-    uint32_t n = std::min<uint32_t>(a.vertex_count ? a.vertex_count : a.draw_count, 8);
+    uint32_t n = std::min<uint32_t>(a.vertex_count ? a.vertex_count : a.draw_count, 12);
     for (int r = 0; r < 16; r++) {
         if (!((a.regs >> r) & 1)) continue;
         const VertexElement& e = a.elements[size_t(r)];
@@ -5093,12 +5106,21 @@ bool FeedbackColour(const Assembled& a, int& alpha, uint32_t& rgb) {
 
 // A cutscene's letterbox bar: a flat black picture across the whole width at the top or at the bottom of the 640 x 480 screen
 // (pretransformed corners, the colour black whatever its alpha). Dropped with the "cutscenes without bars" setting.
+// the in-game pause menu is open (or was a moment ago): its own bars stay
+static bool PauseOpen() {
+    auto since = std::chrono::steady_clock::now().time_since_epoch();
+    uint64_t now = uint64_t(std::chrono::duration_cast<std::chrono::milliseconds>(since).count()) + 1;
+    uint64_t at = app::g_pause_ms.load();
+    return at && now - at < 600;
+}
+
 bool BlackBar(const Assembled& a) {
     if (!a.vertices.empty()) return false;
-    uint32_t n = std::min<uint32_t>(a.vertex_count ? a.vertex_count : a.draw_count, 8);
+    uint32_t n = std::min<uint32_t>(a.vertex_count ? a.vertex_count : a.draw_count, 18);  // the start and end of a cutscene: three quads in one draw (a full-screen one and the two bars, 18 corners)
     if (n < 3) return false;
     float x0 = 1e9f, x1 = -1e9f, y0 = 1e9f, y1 = -1e9f;
-    bool got_pos = false, black = false;
+    bool got_pos = false, black = false, in_middle = false, any_edge = false;
+    float top_max = -1e9f, bottom_min = 1e9f;  // the corners of the top band's lowest edge and the bottom band's highest
     for (int r = 0; r < 16; r++) {
         if (!((a.regs >> r) & 1)) continue;
         const VertexElement& e = a.elements[size_t(r)];
@@ -5107,20 +5129,31 @@ bool BlackBar(const Assembled& a) {
         if (!vb.src || !vb.stride) continue;
         for (uint32_t v = 0; v < n && uint64_t(v) * vb.stride + e.offset + 16 <= vb.bytes; v++) {
             const uint8_t* p = vb.src + size_t(v) * vb.stride + e.offset;
-            if (e.format == DXGI_FORMAT_R32G32B32A32_FLOAT && r == 0) {
+            // the corners are the position register: v0 as four floats, or v1 as three (the untextured bars of the story cutscenes)
+            if ((e.format == DXGI_FORMAT_R32G32B32A32_FLOAT && r == 0) || (e.format == DXGI_FORMAT_R32G32B32_FLOAT && r == 1)) {
                 float f[2];
                 std::memcpy(f, p, 8);
                 x0 = std::min(x0, f[0]); x1 = std::max(x1, f[0]);
                 y0 = std::min(y0, f[1]); y1 = std::max(y1, f[1]);
                 got_pos = true;
+                if (f[1] > 150.0f && f[1] < 330.0f) in_middle = true;
+                else any_edge = true;
+                if (f[1] <= 150.0f) top_max = std::max(top_max, f[1]);
+                if (f[1] >= 330.0f) bottom_min = std::min(bottom_min, f[1]);
             } else if (e.format == DXGI_FORMAT_B8G8R8A8_UNORM && v == 0) {
-                black = (p[1] | p[2] | p[3]) == 0;
+                black = (p[0] | p[1] | p[2]) == 0 || (p[1] | p[2] | p[3]) == 0;  // three of the four bytes zero, the fourth being the alpha (the bars' word is 0000007F: 7F 00 00 00 in memory)
             }
         }
     }
-    if (!got_pos || !black || x0 > 1.5f || x1 < 638.0f) return false;
-    bool top = y0 <= 1.5f && y1 >= 24.0f && y1 <= 150.0f, bottom = y1 >= 478.0f && y0 >= 330.0f && y0 <= 456.0f;
-    return top || bottom;
+    if (!got_pos || x0 > 1.5f || x1 < 638.0f) return false;
+    // the translucent quad the cutscenes lay over the picture between the bars (the picture's own window, its edges are the bars'
+    // inner ones: 69..411 over bars of 0..70 and 411..481): with the bars gone it would show as a lighter rectangle
+    if (!black) return !in_middle && y0 >= 1.5f && y0 <= 150.0f && y1 >= 330.0f && y1 <= 479.0f && n <= 6;
+    // the bars slide in and out at the start and the end of a cutscene: any height, down to a sliver
+    bool top = y0 <= 1.5f && y1 >= 1.0f && y1 <= 150.0f, bottom = y1 >= 478.0f && y0 >= 330.0f && y0 <= 479.0f;
+    // both bars in one draw (two quads, every corner in the top or the bottom band, none across the middle)
+    bool both = y0 <= 1.5f && y1 >= 478.0f && any_edge && !in_middle && top_max >= 1.0f && bottom_min <= 479.0f;
+    return top || bottom || both;
 }
 
 // The level's walls carry no normals (the title bakes their light into vertex colours), so the fire's and explosions'
@@ -5477,7 +5510,7 @@ void D3D12Backend::Draw(const State& s, uint32_t prim, uint32_t start, uint32_t 
                  g_draw_stack[4], g_draw_stack[5], g_draw_stack[6], g_draw_stack[7], app::Get().heat_haze ? "made" : "not made");
     }
     static int bars_logged = 0;
-    const bool letterbox = gpu::g_crop_letterbox.load(std::memory_order_relaxed) && count <= 8 && BlackBar(a);
+    const bool letterbox = gpu::g_crop_letterbox.load(std::memory_order_relaxed) && count <= 18 && kernel::R32(0x4A46EC) < 100 && !PauseOpen() && BlackBar(a);
     if (letterbox && bars_logged++ < 6) LOGR("letterbox: black bar at the top or bottom, not drawn (prim %u count %u)", prim, count);
     bool haze = glow_quads || (!app::Get().heat_haze && shimmer && !invisible_warp);
     if (!blur && !haze && !letterbox && (skip.empty() || std::find(skip.begin(), skip.end(), draw_ordinal_) == skip.end())) DrawGeometry(a);
@@ -7160,6 +7193,43 @@ void D3D12Backend::Present(const Surface& front) {
                 }
         }
         for (int p = 0; p < 8; p++) std::memcpy(lights_now_[(6 + p) * 3], plights_[p], sizeof(plights_[p]));
+    }
+    {
+        // the model lights (slots 0..5): one seen in a frame and not in the next (a muzzle flash, a light a model's program
+        // lost for a frame) blinked on the level's pixels; each lasting one follows the light seen near it and fades out
+        // over a few frames when none is
+        float fresh[6][3][4] = {};
+        bool taken[6] = {};
+        for (int l = 0; l < 6; l++) std::memcpy(fresh[l], lights_now_[l * 3], sizeof(fresh[l]));
+        auto lit = [](const float(*e)[4]) { return e[1][0] || e[1][1] || e[1][2]; };
+        for (int p = 0; p < 6; p++) {
+            float(*o)[4] = mlights_[p];
+            if (!lit(o)) continue;
+            int best = -1;
+            float bd = 4.0f;
+            for (int l = 0; l < 6; l++) {
+                if (taken[l] || !lit(fresh[l])) continue;
+                float dx = o[0][0] - fresh[l][0][0], dy = o[0][1] - fresh[l][0][1], dz = o[0][2] - fresh[l][0][2];
+                float d2 = dx * dx + dy * dy + dz * dz;
+                if (d2 < bd) bd = d2, best = l;
+            }
+            if (best >= 0) {
+                taken[best] = true;
+                std::memcpy(o, fresh[best], sizeof(fresh[best]));
+            } else {
+                for (int k = 0; k < 3; k++) o[1][k] *= 0.75f;
+                if (std::max({o[1][0], o[1][1], o[1][2]}) < 0.03f) std::memset(o, 0, sizeof(float) * 12);
+            }
+        }
+        for (int l = 0; l < 6; l++) {
+            if (taken[l] || !lit(fresh[l])) continue;
+            for (int p = 0; p < 6; p++)
+                if (!lit(mlights_[p])) {
+                    std::memcpy(mlights_[p], fresh[l], sizeof(fresh[l]));
+                    break;
+                }
+        }
+        for (int p = 0; p < 6; p++) std::memcpy(lights_now_[p * 3], mlights_[p], sizeof(mlights_[p]));
     }
     {
         static uint32_t lc = 0;

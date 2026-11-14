@@ -24,6 +24,9 @@
 
 namespace mouse {
 
+// the editor's cursor is up (the editor read the pad lately) and no menu has the pointer over it
+bool EditorMode();
+
 namespace {
 
 HWND g_hwnd = nullptr;
@@ -59,10 +62,11 @@ bool Foreground() {
 }
 bool Play() { return NowMs() - g_aim_ms < kRecentMs && NowMs() - g_pause_ms >= kRecentMs; }
 bool Down(int vk) { return GetAsyncKeyState(vk) < 0; }
+
 bool AltHeld() { return Down(VK_MENU); }
 // windowed: the cursor is held only while playing; in a menu or the pause it leaves the window freely
 bool Locked() {
-    bool held = app::Get().display_mode != app::DisplayMode::Windowed || Play();
+    bool held = app::Get().display_mode != app::DisplayMode::Windowed || Play() || EditorMode();
     return Foreground() && held && !g_unlocked && !AltHeld() && !IsIconic(g_hwnd);
 }
 
@@ -106,10 +110,11 @@ void OnRawInput(void* handle) {
     UpdateClip();
     const RAWMOUSE& m = ri.data.mouse;
     int notch = (m.usButtonFlags & RI_MOUSE_WHEEL) ? (SHORT(m.usButtonData) > 0 ? 1 : -1) : 0;
-    if (!Play()) {
+    if (!Play() && !EditorMode()) {
         g_wheel += notch;
         return;
     }
+    if (!Play()) g_wheel += notch;  // the editor's wheel is the menus' (D-pad up and down)
     if (!Locked()) return;
     if (notch) g_play_notches = std::clamp(g_play_notches + notch, -4, 4);
     if (!(m.usFlags & MOUSE_MOVE_ABSOLUTE)) {
@@ -133,6 +138,14 @@ bool Message(unsigned msg, uintptr_t wp, intptr_t lp, intptr_t* result) {
             break;
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
+            if (msg == WM_SYSKEYDOWN && wp == VK_RETURN && !(lp & (1 << 30))) {
+                // Alt+Enter: full screen and window, as a PC game does (DXGI's own is off, the mode is the settings')
+                app::Settings& st = app::Get();
+                st.display_mode = st.display_mode == app::DisplayMode::Windowed ? app::DisplayMode::Fullscreen : app::DisplayMode::Windowed;
+                app::ApplyDisplay();
+                *result = 0;
+                return true;
+            }
             if (wp == VK_MENU) {
                 UpdateClip();
                 RefreshCursor();
@@ -252,7 +265,7 @@ int WheelButton() {
     return dir;
 }
 
-void InPause() { g_pause_ms = NowMs(); }
+void InPause() { g_pause_ms = NowMs(); app::g_pause_ms = g_pause_ms.load(); }
 
 void InMenu() {
     if (NowMs() - g_menu_ms >= kRecentMs) RefreshCursor();
@@ -311,6 +324,33 @@ void InGameCursor() {
 }
 
 bool GameCursorMode() { return NowMs() - g_game_cursor_ms < kRecentMs && !Play(); }
+bool EditorMode() { return GameCursorMode() && !MenuMode(); }
+
+// The mouse's speed as the left stick's tilt while the editor's cursor is up, as VehicleStick does for the right one
+bool EditorStick(int16_t& lx, int16_t& ly) {
+    static float vx = 0, vy = 0;
+    static uint64_t last = 0;
+    uint64_t now = NowMs();
+    float dt = last ? float(now - last) / 1000.0f : 0.0f;
+    last = now;
+    if (!EditorMode() || !Locked()) {
+        vx = vy = 0;
+        return false;
+    }
+    float dx = 0, dy = 0;
+    TakeMotion(dx, dy);
+    constexpr float kSettleMs = 60.0f, kFullSpeed = 1500.0f;
+    float keep = dt > 0 ? std::exp(-dt * 1000.0f / kSettleMs) : 1.0f;
+    float rate = dt > 0 ? (1.0f - keep) / dt : 0.0f;
+    vx = vx * keep + dx * rate;
+    vy = vy * keep + dy * rate;
+    float scale = float(game::Opt().mouse_sensitivity) / 100.0f / kFullSpeed;
+    float x = std::clamp(vx * scale, -1.0f, 1.0f), y = std::clamp(-vy * scale, -1.0f, 1.0f);
+    if (std::abs(x) < 0.02f && std::abs(y) < 0.02f) return false;
+    lx = int16_t(x * 32767.0f);
+    ly = int16_t(y * 32767.0f);
+    return true;
+}
 bool InPlay() { return Play(); }
 bool InPausedWorld() { return NowMs() - g_aim_ms < kRecentMs && NowMs() - g_pause_ms < kRecentMs; }
 

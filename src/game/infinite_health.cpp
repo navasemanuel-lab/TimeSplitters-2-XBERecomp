@@ -29,6 +29,12 @@ bool Mapped(uint32_t va) {
     return va >= 0xB0000000 && va < 0xE0000000;
 }
 
+// the players' states and objects live in the title's memory, never on a stack: an address out in the threads' range is
+// a stale pointer there (a freed object is filled with 0xD7, 0xD7D7D994 killed Wild West's load)
+bool InHeap(uint32_t va) {
+    return va >= 0x10000 && (va < 0x04000000 || (va >= 0x80000000 && va < 0x88000000)) && mem::IsCommitted(va);
+}
+
 float F32(uint32_t va) {
     uint32_t v = kernel::R32(va);
     float f;
@@ -40,10 +46,10 @@ float F32(uint32_t va) {
 template <class F> void EachPlayer(F f) {
     uint32_t players = kernel::R32(kPlayers);
     uint32_t count = kernel::R32(kPlayerCount);
-    if (!Mapped(players) || count > 4) return;
+    if (!InHeap(players) || count > 4) return;
     for (uint32_t i = 0; i < count; i++) {
         uint32_t obj = kernel::R32(players + i * kPlayerSize + kObject);
-        if (Mapped(obj) && Mapped(obj + kMost + 4) && !(obj & 3)) f(obj);
+        if (InHeap(obj) && InHeap(obj + kMost + 4) && !(obj & 3)) f(obj);
     }
 }
 

@@ -122,12 +122,8 @@ def unswizzle(level0, w, h):
 def logo(z, console):
     """Redux's logo without its name, with a dark glow, laid where the console's has it in its texture (four times its
     size): the game draws that texture in other places too, by the same coordinates"""
-    im = redux_picture(z, 'ts2newlogo')
-    w, h = im.size
-    a = np.asarray(im).copy()
-    m = name_mask(im, (int(w * 0.58), int(h * 0.58), int(w * 0.79), int(h * 0.78)))
-    a[..., 3][m > 0] = 0
-    im = Image.fromarray(a)
+    # the logo and its glow are pictures of their own without Redux's name (tools/hd_src), not Redux's
+    im = Image.open(os.path.join(os.path.dirname(__file__), 'hd_src', 'ts2newlogo.png')).convert('RGBA')
     im = im.crop(im.getbbox())
     gw, gh, level0 = console
     alpha = unswizzle(level0, gw, gh)[..., 3]
@@ -152,7 +148,54 @@ def logo(z, console):
 
 REDUX_HUD = ('arc_bar arc_outline crosshair_arrow crosshair_circle crosshair_laser crosshair_old crosshair_olde '
              'crosshair_shaded crosshair_triangle xbbuttons xbbuttons2 xbcontroller xbcontrollerglow xbstdbutton1 '
-             'xbstdbutton2 xbstdbutton3 xbstdbutton4 xbstdbutton5').split()
+             'xbstdbutton2 xbstdbutton3 xbstdbutton4 xbstdbutton5 loadlogo ts2glow ts2load1 ts2load2 ts2load3 '
+             'ts2logo gmod_assault gmod_bagtag gmod_ctf gmod_dm gmod_elimination gmod_escort gmod_flametag gmod_gladiator '
+             'gmod_leech gmod_monkey_assist gmod_regeneration gmod_shrink gmod_story gmod_teamdm gmod_thief gmod_vampire '
+             'gmod_virus gmod_zones').split()
+
+
+def strip_name(im):
+    """the logos of the loading screens and ts2logo have Redux's green name under them: painted out (black, or
+    transparent where the picture has an alpha)"""
+    a = np.asarray(im.convert('RGBA')).copy()
+    r, g, b = a[..., 0].astype(int), a[..., 1].astype(int), a[..., 2].astype(int)
+    green = ((g > r + 25) & (g > b + 15) & (g > 60)).astype(np.uint8) * 255
+    m = cv2.dilate(green, np.ones((3, 3), np.uint8), iterations=6) > 0
+    transparent = (a[..., 3] < 255).any()
+    a[m, :3] = 0
+    if transparent:
+        a[m, 3] = 0
+    return Image.fromarray(a)
+
+
+def glow_without_name(im):
+    """ts2glow is the logo's silhouette with a white halo (the silhouette transparent), Redux's name in it: that part of the
+    picture (1024x512: x 606..798, y 322..414) is filled in from its edges (the halo of the letters above fades out
+    under them, nothing is left of the name's silhouette and halo)"""
+    a = np.asarray(im.convert('RGBA')).copy()
+    sx, sy = a.shape[1] / 1024.0, a.shape[0] / 512.0
+    x0, x1, y0, y1 = int(606 * sx), int(798 * sx), int(322 * sy), int(414 * sy)
+    # the halo of the letters above, carried down and faded out; the sides blended into the picture around
+    top = cv2.GaussianBlur(a[y0 - 6:y0 - 2, :, 3].astype(np.float32).mean(axis=0, keepdims=True), (0, 0), 6 * sx)[0]
+    alpha = a[..., 3].astype(np.float32)
+    t = np.clip((np.arange(y0, y1) - y0) / max(1.0, 38 * sy), 0, 1)[:, None]
+    fill = top[None, x0:x1] * (1 - t) ** 2
+    alpha[y0:y1, x0:x1] = fill
+    alpha = np.clip(alpha, 0, 255)
+    soft = cv2.GaussianBlur(alpha, (0, 0), 3 * sx)
+    m = np.zeros_like(alpha)
+    m[y0 - 4:y1 + 4, x0 - 4:x1 + 4] = 1
+    m = cv2.GaussianBlur(m, (0, 0), 3 * sx)
+    m[y0:y1, x0:x1] = 1
+    keep = np.asarray(im.convert('RGBA'))[..., 3].astype(np.float32)
+    alpha = np.where(m >= 1, alpha, keep * (1 - m) + soft * m).astype(np.uint8)
+    ref = a[y0 - 6:y0 - 2, :, :3].astype(np.float32).mean(axis=(0, 1))  # the halo's colour above
+    a[y0 - 2:y1 + 6, x0 - 6:x1 + 6, :3] = ref.astype(np.uint8)
+    a[..., 3] = alpha
+    return Image.fromarray(a)
+
+
+NAME_STRIPPED = {'loadlogo', 'ts2load1', 'ts2load2', 'ts2load3', 'ts2logo'}
 
 
 def hud_pictures(z, data_dir):
@@ -178,7 +221,8 @@ def hud_pictures(z, data_dir):
             if key in seen:
                 continue
             seen.add(key)
-            found.append((base, (w, h, data), redux_picture(z, base)))
+            pic = redux_picture(z, base)
+            found.append((base, (w, h, data), Image.open(os.path.join(os.path.dirname(__file__), 'hd_src', 'ts2glow.png')).convert('RGBA') if base == 'ts2glow' else strip_name(pic) if base in NAME_STRIPPED else pic))
     return found
 
 

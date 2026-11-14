@@ -13,6 +13,7 @@
 #include <d3d11.h>
 #include <shellapi.h>
 #include <tlhelp32.h>
+#include <wincodec.h>
 #include <winhttp.h>
 
 #include <algorithm>
@@ -913,6 +914,8 @@ void InstallUpdate() {
 
 void UpdatesTab() {
     ImGui::Text("Versión instalada: %s", LocalVersion().c_str());
+    ImGui::TextDisabled("Las versiones nuevas se publican como \"releases\" de GitHub: el launcher las busca ahí y las instala por ti.");
+    if (ImGui::CollapsingHeader("Avanzado: repositorio y token de GitHub")) {
     ImGui::Text("Repositorio:");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(380);
@@ -941,6 +944,7 @@ void UpdatesTab() {
         } else {
             Say("gh no devolvió ningún token (¿está instalado y con la sesión iniciada?).");
         }
+    }
     }
     ImGui::Separator();
     if (ImGui::Button("Buscar actualizaciones")) CheckUpdate();
@@ -976,36 +980,57 @@ void Play() {
 }
 
 void PlayTab() {
-    ImGui::Dummy(ImVec2(0, 6));
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
-    ImGui::SetWindowFontScale(1.6f);
+    ImGui::Dummy(ImVec2(0, 4));
+    ImGui::SetWindowFontScale(1.9f);
     ImGui::TextUnformatted("TimeSplitters 2");
     ImGui::SetWindowFontScale(1.f);
-    ImGui::PopStyleColor();
     ImGui::TextDisabled("Port nativo de la versión USA de Xbox  -  versión %s", LocalVersion().c_str());
-    ImGui::Dummy(ImVec2(0, 8));
-    ImVec4 col = g_game.kind == GameState::Ok ? ImVec4(.4f, 1, .5f, 1) : g_game.kind == GameState::Other ? ImVec4(1, .6f, .3f, 1) : ImVec4(1, .4f, .4f, 1);
-    ImGui::TextColored(col, g_game.kind == GameState::Ok ? "Juego listo" : g_game.kind == GameState::Other ? "Versión equivocada" : "Falta el juego");
-    ImGui::TextWrapped("%s", g_game.where.c_str());
-    ImGui::TextDisabled("%s", g_game.detail.c_str());
     ImGui::Dummy(ImVec2(0, 6));
-    if (ImGui::Button("Seleccionar ISO USA…", ImVec2(210, 34))) ImportIso();
+
+    // the state of the game files, as a card with a coloured dot
+    const bool ok = g_game.kind == GameState::Ok;
+    ImVec4 col = ok ? ImVec4(.35f, .90f, .50f, 1) : g_game.kind == GameState::Other ? ImVec4(1, .62f, .28f, 1) : ImVec4(1, .38f, .38f, 1);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(.12f, .14f, .18f, 1));
+    ImGui::BeginChild("state", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 4.6f), true);
+    {
+        ImVec2 at = ImGui::GetCursorScreenPos();
+        float r = ImGui::GetTextLineHeight() * 0.32f;
+        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(at.x + r + 1, at.y + ImGui::GetTextLineHeight() * 0.5f), r, ImGui::GetColorU32(col));
+        ImGui::Dummy(ImVec2(r * 2 + 8, 0));
+        ImGui::SameLine();
+        ImGui::TextColored(col, "%s", ok ? "Juego listo" : g_game.kind == GameState::Other ? "Versión equivocada" : "Falta el juego");
+        ImGui::TextWrapped("%s", g_game.where.c_str());
+        ImGui::TextDisabled("%s", g_game.detail.c_str());
+    }
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+    ImGui::Dummy(ImVec2(0, 2));
+    if (ImGui::Button("Seleccionar ISO USA...", ImVec2(210, 34))) ImportIso();
     ImGui::SameLine();
     if (ImGui::Button("Volver a comprobar", ImVec2(170, 34))) CheckGame();
-    ImGui::Dummy(ImVec2(0, 14));
-    ImGui::BeginDisabled(g_game.kind != GameState::Ok || g_busy);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.15f, .55f, .25f, 1));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.2f, .65f, .3f, 1));
-    if (ImGui::Button("JUGAR", ImVec2(210, 52))) Play();
-    ImGui::PopStyleColor(2);
-    ImGui::EndDisabled();
-    ImGui::Dummy(ImVec2(0, 14));
-    if (ImGui::Button("Abrir la carpeta del juego")) ShellExecuteW(nullptr, L"open", g_exe.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-    ImGui::SameLine();
-    if (ImGui::Button("Ver el registro (log)")) ShellExecuteW(nullptr, L"open", (g_exe / "logs").c_str(), nullptr, nullptr, SW_SHOWNORMAL);
     ImGui::Dummy(ImVec2(0, 10));
+
+    ImGui::BeginDisabled(!ok || g_busy);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.14f, .58f, .28f, 1));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.19f, .70f, .35f, 1));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.11f, .48f, .23f, 1));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.f);
+    ImGui::SetWindowFontScale(1.35f);
+    if (ImGui::Button("JUGAR", ImVec2(-1, 62))) Play();
+    ImGui::SetWindowFontScale(1.f);
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(3);
+    ImGui::EndDisabled();
+    ImGui::Dummy(ImVec2(0, 8));
+    float half = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5f;
+    if (ImGui::Button("Abrir la carpeta del juego", ImVec2(half, 0))) ShellExecuteW(nullptr, L"open", g_exe.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+    ImGui::SameLine();
+    if (ImGui::Button("Ver el registro (log)", ImVec2(half, 0))) ShellExecuteW(nullptr, L"open", (g_exe / "logs").c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+    ImGui::Dummy(ImVec2(0, 10));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
     ImGui::TextWrapped("La primera vez que juegas, el juego prepara su código para tu PC con tu propia copia del juego: tarda unos minutos y solo pasa una vez. "
                        "En el juego, F1 abre el panel de ajustes.");
+    ImGui::PopStyleColor();
 }
 
 // ---------------------------------------------------------------------------------------------------------------- Direct3D 11
@@ -1036,6 +1061,179 @@ bool InitD3D(HWND hwnd) {
     return true;
 }
 
+// ---------------------------------------------------------------------------------------------------------------- art
+// The banner at the left, as TSFP's launcher has it: art/cover.* first, then the pictures of art/slides in their names' order,
+// one fading into the next. Decoded by WIC, shown as ImGui images.
+struct Tex {
+    ID3D11ShaderResourceView* view = nullptr;
+    int w = 0, h = 0;
+};
+std::vector<Tex> g_art, g_portrait;
+Tex g_logo;
+float g_scale = 1.f;
+ImFont *g_big = nullptr, *g_play = nullptr, *g_tabfont = nullptr;
+int g_page = 0;
+
+bool LoadTex(const fs::path& p, Tex& out) {
+    IWICImagingFactory* f = nullptr;
+    if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&f)))) return false;
+    IWICBitmapDecoder* dec = nullptr;
+    IWICBitmapFrameDecode* frame = nullptr;
+    IWICFormatConverter* conv = nullptr;
+    bool ok = false;
+    if (SUCCEEDED(f->CreateDecoderFromFilename(p.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &dec)) &&
+        SUCCEEDED(dec->GetFrame(0, &frame)) && SUCCEEDED(f->CreateFormatConverter(&conv)) &&
+        SUCCEEDED(conv->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom))) {
+        UINT w = 0, h = 0;
+        conv->GetSize(&w, &h);
+        std::vector<uint8_t> px(size_t(w) * h * 4);
+        if (w && h && SUCCEEDED(conv->CopyPixels(nullptr, w * 4, UINT(px.size()), px.data()))) {
+            D3D11_TEXTURE2D_DESC td{};
+            td.Width = w; td.Height = h; td.MipLevels = 1; td.ArraySize = 1;
+            td.Format = DXGI_FORMAT_R8G8B8A8_UNORM; td.SampleDesc.Count = 1;
+            td.Usage = D3D11_USAGE_IMMUTABLE; td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            D3D11_SUBRESOURCE_DATA sd{px.data(), w * 4, 0};
+            ID3D11Texture2D* tex = nullptr;
+            if (SUCCEEDED(g_dev->CreateTexture2D(&td, &sd, &tex))) {
+                ok = SUCCEEDED(g_dev->CreateShaderResourceView(tex, nullptr, &out.view));
+                tex->Release();
+                out.w = int(w); out.h = int(h);
+            }
+        }
+    }
+    if (conv) conv->Release();
+    if (frame) frame->Release();
+    if (dec) dec->Release();
+    f->Release();
+    return ok;
+}
+
+void LoadArt() {
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    std::error_code ec;
+    for (const char* ext : {".png", ".jpg", ".jpeg", ".webp"}) {
+        Tex t;
+        if (LoadTex(g_exe / "art" / (std::string("cover") + ext), t)) { g_portrait.push_back(t); break; }
+    }
+    LoadTex(g_exe / "art" / "logo.png", g_logo);
+    std::vector<fs::path> files;
+    for (const auto& e : fs::directory_iterator(g_exe / "art" / "slides", ec)) files.push_back(e.path());
+    std::sort(files.begin(), files.end());
+    for (const fs::path& p : files) {
+        Tex t;
+        if (LoadTex(p, t)) (t.w >= t.h ? g_art : g_portrait).push_back(t);
+    }
+    if (g_art.empty()) g_art = g_portrait;  // no landscape picture: whatever there is, cropped
+}
+
+// The background, as the port launchers of the other games have it: a wide picture across the top of the window fading into the
+// dark of the rest, a warm glow at the foot and embers rising. The pictures of art/ in their names' order, one fading into the next.
+void DrawBackground(ImDrawList* dl, float W, float H) {
+    const ImU32 ink = IM_COL32(8, 14, 32, 255), clear = IM_COL32(8, 14, 32, 0);
+    dl->AddRectFilled(ImVec2(0, 0), ImVec2(W, H), ink);
+    float picture_h = 0;
+    if (!g_art.empty()) {
+        double t = ImGui::GetTime() / 7.0;  // seven seconds a picture, the last of them a fade
+        size_t n = g_art.size(), i = size_t(t) % n;
+        float k = n > 1 ? std::clamp(float((t - std::floor(t)) * 7.0 - 6.0), 0.f, 1.f) : 0.f;
+        auto draw = [&](const Tex& x, float alpha) {
+            float s = W / float(x.w), ih = float(x.h) * s;
+            float h = std::min(ih, H * 0.78f);
+            float v0 = (1.f - h / ih) * 0.28f;  // a tall picture is cropped from the lower part: the faces are above the middle
+            float v1 = v0 + h / ih;
+            picture_h = std::max(picture_h, h);
+            dl->AddImage(ImTextureID(x.view), ImVec2(0, 0), ImVec2(W, h), ImVec2(0, v0), ImVec2(1, v1), IM_COL32(255, 255, 255, int(255 * alpha)));
+        };
+        draw(g_art[i], 1.f);
+        if (k > 0.f) draw(g_art[(i + 1) % n], k);
+        dl->AddRectFilledMultiColor(ImVec2(0, picture_h * 0.5f), ImVec2(W, picture_h + 1), clear, clear, ink, ink);
+    }
+    // the glow at the foot, the menus' blue
+    dl->AddRectFilledMultiColor(ImVec2(0, H * 0.55f), ImVec2(W, H), IM_COL32(20, 60, 150, 0), IM_COL32(20, 60, 150, 0), IM_COL32(30, 90, 200, 70),
+                                IM_COL32(30, 90, 200, 70));
+    // embers rising, in the blue of the menus
+    double tm = ImGui::GetTime();
+    for (int i = 0; i < 48; i++) {
+        float seed = std::fmod(std::sin(float(i) * 12.9898f) * 43758.5453f, 1.f);
+        if (seed < 0) seed += 1.f;
+        float speed = (10.f + float(i % 7) * 5.f) * g_scale;
+        float rise = std::fmod(float(tm) * speed + seed * H, H * 0.95f);
+        float x = seed * W + std::sin(float(tm) * 0.7f + float(i)) * 14.f * g_scale;
+        float y = H - rise;
+        float life = 1.f - rise / (H * 0.95f);
+        float a = std::clamp(life * 1.4f, 0.f, 1.f) * (0.45f + 0.35f * std::sin(float(tm) * 2.f + float(i) * 1.7f));
+        dl->AddCircleFilled(ImVec2(x, y), (1.0f + float(i % 3) * 0.7f) * g_scale, IM_COL32(90, 175, 255, int(255 * std::clamp(a, 0.f, 1.f))));
+    }
+}
+
+// text in a font at its own size
+void PutText(ImDrawList* dl, ImFont* f, float size, ImVec2 at, ImU32 col, const char* text, bool right = false) {
+    if (!f) f = ImGui::GetFont();
+    if (right) at.x -= f->CalcTextSizeA(size, FLT_MAX, 0.f, text).x;
+    dl->AddText(f, size, at, col, text);
+}
+
+// the first page: the title, the play button and what the game's files are, at the foot of the picture to the right
+void HomePage(float W, float H, float bar) {
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    const float m = 54.f * g_scale, base = H - bar - 40.f * g_scale;
+    const bool ok = g_game.kind == GameState::Ok;
+    const ImU32 col = ok ? IM_COL32(95, 230, 130, 255) : g_game.kind == GameState::Other ? IM_COL32(255, 160, 70, 255) : IM_COL32(255, 100, 100, 255);
+    // the hint, the chips, the button, the title: from the bottom up
+    PutText(dl, nullptr, 15.f * g_scale, ImVec2(W - m, base - 4.f * g_scale), IM_COL32(150, 155, 170, 255), "En el juego, F1 abre el panel de ajustes.", true);
+    std::string chips[2] = {std::string(ok ? "Juego listo" : g_game.kind == GameState::Other ? "Versión equivocada" : "Falta el juego"), "Versión " + LocalVersion()};
+    ImU32 cols[2] = {col, IM_COL32(190, 195, 210, 255)};
+    float cx = W - m, cy = base - 46.f * g_scale, ch = 28.f * g_scale;
+    for (int i = 0; i < 2; i++) {
+        ImVec2 sz = ImGui::GetFont()->CalcTextSizeA(15.f * g_scale, FLT_MAX, 0.f, chips[i].c_str());
+        float w = sz.x + 26.f * g_scale;
+        dl->AddRect(ImVec2(cx - w, cy), ImVec2(cx, cy + ch), cols[i], ch * 0.5f, 0, 1.4f * g_scale);
+        dl->AddText(ImGui::GetFont(), 15.f * g_scale, ImVec2(cx - w + 13.f * g_scale, cy + (ch - sz.y) * 0.5f), cols[i], chips[i].c_str());
+        cx -= w + 10.f * g_scale;
+    }
+    float bw = 236.f * g_scale, bh = 74.f * g_scale, by = cy - 16.f * g_scale - bh;
+    ImGui::SetCursorScreenPos(ImVec2(W - m - bw, by));
+    ImGui::BeginDisabled(!ok || g_busy);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(.10f, .36f, .84f, 1));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(.18f, .50f, 1.f, 1));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(.07f, .28f, .66f, 1));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f * g_scale);
+    if (g_play) ImGui::PushFont(g_play);
+    if (ImGui::Button("JUGAR", ImVec2(bw, bh))) Play();
+    if (g_play) ImGui::PopFont();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(3);
+    ImGui::EndDisabled();
+    // the title: the game's own logo, or its name in letters when the picture is missing
+    if (g_logo.view) {
+        float lw = std::min(430.f * g_scale, W * 0.42f), lh = lw * float(g_logo.h) / float(g_logo.w);
+        float lx = W - m - lw, ly2 = by - 14.f * g_scale - lh;
+        dl->AddImage(ImTextureID(g_logo.view), ImVec2(lx, ly2), ImVec2(lx + lw, ly2 + lh));
+    } else {
+        float ts = 60.f * g_scale, ty = by - ts - 6.f * g_scale;
+        ImFont* bf = g_big ? g_big : ImGui::GetFont();
+        float w2 = bf->CalcTextSizeA(ts, FLT_MAX, 0.f, " 2").x;
+        PutText(dl, bf, ts, ImVec2(W - m, ty), IM_COL32(70, 150, 255, 255), " 2", true);
+        PutText(dl, bf, ts, ImVec2(W - m - w2, ty), IM_COL32(240, 242, 248, 255), "TIMESPLITTERS", true);
+    }
+    // the file actions, small and quiet at the left
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1, 1, 1, .10f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.74f, .77f, .84f, 1));
+    float ly = base - 4.f * g_scale - 4 * (ImGui::GetFrameHeight() + 4.f * g_scale);
+    const char* names[4] = {"Seleccionar ISO USA...", "Volver a comprobar", "Abrir la carpeta del juego", "Ver el registro (log)"};
+    for (int i = 0; i < 4; i++) {
+        ImGui::SetCursorScreenPos(ImVec2(m * 0.6f, ly + float(i) * (ImGui::GetFrameHeight() + 4.f * g_scale)));
+        if (ImGui::Button(names[i])) {
+            if (i == 0) ImportIso();
+            else if (i == 1) CheckGame();
+            else if (i == 2) ShellExecuteW(nullptr, L"open", g_exe.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+            else ShellExecuteW(nullptr, L"open", (g_exe / "logs").c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        }
+    }
+    ImGui::PopStyleColor(3);
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wp, lp)) return true;
     switch (msg) {
@@ -1056,19 +1254,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 void Style(float scale) {
     ImGui::StyleColorsDark();
     ImGuiStyle& s = ImGui::GetStyle();
-    s.WindowRounding = 0; s.FrameRounding = 5; s.GrabRounding = 5; s.TabRounding = 5; s.ChildRounding = 5;
-    s.FramePadding = ImVec2(10, 6); s.ItemSpacing = ImVec2(10, 8);
+    s.WindowRounding = 0; s.FrameRounding = 8; s.GrabRounding = 8; s.TabRounding = 8; s.ChildRounding = 10; s.PopupRounding = 8; s.ScrollbarRounding = 8;
+    s.FramePadding = ImVec2(12, 7); s.ItemSpacing = ImVec2(10, 9); s.WindowPadding = ImVec2(16, 14); s.ChildBorderSize = 1; s.FrameBorderSize = 0;
+    s.TabBarBorderSize = 1; s.ScrollbarSize = 12;
     ImVec4* c = s.Colors;
-    c[ImGuiCol_WindowBg] = ImVec4(.09f, .10f, .12f, 1);
-    c[ImGuiCol_Tab] = ImVec4(.14f, .16f, .20f, 1);
-    c[ImGuiCol_TabHovered] = ImVec4(.25f, .45f, .75f, 1);
-    c[ImGuiCol_TabActive] = ImVec4(.20f, .38f, .66f, 1);
-    c[ImGuiCol_Button] = ImVec4(.20f, .38f, .66f, 1);
-    c[ImGuiCol_ButtonHovered] = ImVec4(.26f, .48f, .82f, 1);
-    c[ImGuiCol_FrameBg] = ImVec4(.15f, .17f, .21f, 1);
-    c[ImGuiCol_Header] = ImVec4(.17f, .20f, .27f, 1);
+    c[ImGuiCol_WindowBg] = ImVec4(.07f, .08f, .10f, 1);
+    c[ImGuiCol_ChildBg] = ImVec4(.09f, .10f, .13f, 1);
+    c[ImGuiCol_Border] = ImVec4(.18f, .21f, .27f, 1);
+    c[ImGuiCol_Separator] = ImVec4(.18f, .21f, .27f, 1);
+    c[ImGuiCol_Tab] = ImVec4(.11f, .13f, .17f, 1);
+    c[ImGuiCol_TabHovered] = ImVec4(.26f, .46f, .78f, 1);
+    c[ImGuiCol_TabActive] = ImVec4(.20f, .38f, .68f, 1);
+    c[ImGuiCol_Button] = ImVec4(.18f, .34f, .62f, 1);
+    c[ImGuiCol_ButtonHovered] = ImVec4(.25f, .46f, .80f, 1);
+    c[ImGuiCol_ButtonActive] = ImVec4(.15f, .29f, .54f, 1);
+    c[ImGuiCol_FrameBg] = ImVec4(.13f, .15f, .19f, 1);
+    c[ImGuiCol_FrameBgHovered] = ImVec4(.17f, .20f, .26f, 1);
+    c[ImGuiCol_Header] = ImVec4(.16f, .20f, .28f, 1);
+    c[ImGuiCol_HeaderHovered] = ImVec4(.22f, .30f, .45f, 1);
     c[ImGuiCol_CheckMark] = ImVec4(.45f, .75f, 1, 1);
     c[ImGuiCol_SliderGrab] = ImVec4(.35f, .60f, .95f, 1);
+    c[ImGuiCol_TextDisabled] = ImVec4(.55f, .60f, .68f, 1);
+    c[ImGuiCol_PlotHistogram] = ImVec4(.25f, .70f, .40f, 1);
     s.ScaleAllSizes(scale);
 }
 
@@ -1090,7 +1297,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
     float scale = float(dpi) / 96.f;
     WNDCLASSEXW wc{sizeof(wc), CS_CLASSDC, WndProc, 0, 0, inst, LoadIconW(inst, MAKEINTRESOURCEW(1)), nullptr, nullptr, nullptr, L"TS2Launcher", nullptr};
     RegisterClassExW(&wc);
-    HWND hwnd = CreateWindowW(wc.lpszClassName, L"TimeSplitters 2 - Launcher", WS_OVERLAPPEDWINDOW, 100, 80, int(980 * scale), int(680 * scale), nullptr, nullptr, inst, nullptr);
+    HWND hwnd = CreateWindowW(wc.lpszClassName, L"TimeSplitters 2 - Launcher", WS_OVERLAPPEDWINDOW, 100, 80, int(1100 * scale), int(700 * scale), nullptr, nullptr, inst, nullptr);
     if (!InitD3D(hwnd)) {
         MessageBoxW(nullptr, L"No se pudo iniciar Direct3D 11.", L"TS2 Launcher", MB_ICONERROR);
         return 1;
@@ -1104,9 +1311,17 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
     // Segoe UI covers the accents of every language; the default font only the basic ones
     static const ImWchar ranges[] = {0x20, 0x17F, 0x2010, 0x2026, 0};
     if (!io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 17.f * scale, nullptr, ranges)) io.Fonts->AddFontDefault();
+    g_scale = scale;
+    {
+        static const ImWchar big_ranges[] = {0x20, 0x17F, 0};
+        g_big = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeuib.ttf", 60.f * scale, nullptr, big_ranges);
+        g_play = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeuib.ttf", 28.f * scale, nullptr, big_ranges);
+        g_tabfont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\seguisb.ttf", 16.f * scale, nullptr, big_ranges);
+    }
     Style(scale);
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(g_dev, g_ctx);
+    LoadArt();
 
     MSG msg{};
     while (!g_quit) {
@@ -1121,24 +1336,66 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
         ImGui::NewFrame();
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGui::Begin("main", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-        float footer = ImGui::GetFrameHeightWithSpacing() * (g_busy ? 3.2f : 2.2f);
-        ImGui::BeginChild("body", ImVec2(0, -footer));
-        if (ImGui::BeginTabBar("tabs")) {
-            if (ImGui::BeginTabItem("Jugar")) { PlayTab(); ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Opciones")) { OptionsTab(); ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Perfiles")) { SavesTab("perfil", "Los perfiles del juego (partidas, niveles y personajes desbloqueados).", "perfiles"); ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Mapas MapMaker")) { SavesTab("mapa", "Los mapas que has creado o importado en el MapMaker.", "mapas"); ImGui::EndTabItem(); }
-            if (ImGui::BeginTabItem("Actualizaciones")) { UpdatesTab(); ImGui::EndTabItem(); }
-            ImGui::EndTabBar();
+        ImGui::Begin("main", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground);
+        const float W = io.DisplaySize.x, H = io.DisplaySize.y, bar = 56.f * scale;
+        ImDrawList* bg = ImGui::GetBackgroundDrawList();
+        DrawBackground(bg, W, H);
+        // the page
+        if (g_page == 0) {
+            HomePage(W, H, bar);
+        } else {
+            float pm = 26.f * scale;
+            ImGui::SetCursorScreenPos(ImVec2(pm, pm));
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(.03f, .06f, .12f, .90f));
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20.f * scale, 16.f * scale));
+            ImGui::BeginChild("page", ImVec2(W - 2 * pm, H - bar - 2 * pm - 34.f * scale), true);
+            if (g_page == 1) OptionsTab();
+            else if (g_page == 2) SavesTab("perfil", "Los perfiles del juego (partidas, niveles y personajes desbloqueados).", "perfiles");
+            else if (g_page == 3) SavesTab("mapa", "Los mapas que has creado o importado en el MapMaker.", "mapas");
+            else UpdatesTab();
+            ImGui::EndChild();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
         }
-        ImGui::EndChild();
-        ImGui::Separator();
-        if (g_busy) ImGui::ProgressBar(g_progress, ImVec2(-1, 0));
-        ImGui::TextWrapped("%s", Said().c_str());
+        // what the launcher is doing
+        if (g_busy) {
+            ImGui::SetCursorScreenPos(ImVec2(28.f * scale, H - bar - 52.f * scale));
+            ImGui::ProgressBar(g_progress, ImVec2(W * 0.4f, 10.f * scale), "");
+        }
+        ImGui::SetCursorScreenPos(ImVec2(28.f * scale, H - bar - 28.f * scale));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.80f, .83f, .90f, 1));
+        ImGui::TextUnformatted(Said().c_str());
+        ImGui::PopStyleColor();
+        // the bar of pages at the foot
+        const ImU32 red = IM_COL32(60, 140, 255, 255);
+        bg->AddRectFilled(ImVec2(0, H - bar), ImVec2(W, H), IM_COL32(6, 10, 22, 248));
+        bg->AddRectFilled(ImVec2(0, H - bar), ImVec2(W, H - bar + 2.f * scale), IM_COL32(30, 80, 170, 255));
+        static const char* kPages[5] = {"JUGAR", "OPCIONES", "PERFILES", "MAPAS MAPMAKER", "ACTUALIZACIONES"};
+        float px = 18.f * scale;
+        ImFont* tf = g_tabfont ? g_tabfont : ImGui::GetFont();
+        float tsz = 16.f * scale;
+        for (int i = 0; i < 5; i++) {
+            ImVec2 ts = tf->CalcTextSizeA(tsz, FLT_MAX, 0.f, kPages[i]);
+            float w = ts.x + 40.f * scale;
+            ImGui::SetCursorScreenPos(ImVec2(px, H - bar + 2.f * scale));
+            char id[16];
+            snprintf(id, sizeof id, "##pg%d", i);
+            if (ImGui::InvisibleButton(id, ImVec2(w, bar - 2.f * scale))) g_page = i;
+            bool hot = ImGui::IsItemHovered(), on = g_page == i;
+            if (on) bg->AddRectFilled(ImVec2(px, H - bar + 2.f * scale), ImVec2(px + w, H), IM_COL32(255, 255, 255, 14));
+            if (on) bg->AddRectFilled(ImVec2(px, H - 4.f * scale), ImVec2(px + w, H), red);
+            bg->AddText(tf, tsz, ImVec2(px + 20.f * scale, H - bar * 0.5f - ts.y * 0.5f + 1.f * scale),
+                        on ? IM_COL32(110, 175, 255, 255) : hot ? IM_COL32(245, 245, 250, 255) : IM_COL32(170, 175, 190, 255), kPages[i]);
+            px += w;
+        }
+        {
+            std::string v = "v" + LocalVersion() + "  -  Windows";
+            ImVec2 vs = ImGui::GetFont()->CalcTextSizeA(15.f * scale, FLT_MAX, 0.f, v.c_str());
+            bg->AddText(ImGui::GetFont(), 15.f * scale, ImVec2(W - vs.x - 22.f * scale, H - bar * 0.5f - vs.y * 0.5f), IM_COL32(120, 126, 140, 255), v.c_str());
+        }
         ImGui::End();
         ImGui::Render();
-        const float clear[4] = {.09f, .10f, .12f, 1};
+        const float clear[4] = {.035f, .035f, .047f, 1};
         g_ctx->OMSetRenderTargets(1, &g_rtv, nullptr);
         g_ctx->ClearRenderTargetView(g_rtv, clear);
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

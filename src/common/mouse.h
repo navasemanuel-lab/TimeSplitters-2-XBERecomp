@@ -35,6 +35,8 @@ void InTerminal();                // game thread, each frame a terminal's pointe
 bool TerminalMode();              // its buttons are A and B, not the triggers
 void InGameCursor();              // game thread, each frame the game draws a cursor of its own (MapMaker)
 bool GameCursorMode();            // its cursor follows the mouse: the clicks are A and B, the system arrow hidden
+// the MapMaker's editor (its code reads the pad): the mouse moves the cursor as the left stick would, its clicks A and B
+bool EditorStick(int16_t& lx, int16_t& ly);  // pad poll: the stick the mouse moves, false when it has not moved
 bool MenuMode();                  // a menu has the pointer: its clicks are not the pad's triggers
 Pointer MenuPointer(bool take);   // take: the wheel notches too
 void TestPointer(float x, float y, bool left, bool right);  // input scripts: in place of the cursor for a moment

@@ -160,7 +160,7 @@ void HudTrace(const char* what, uint32_t ret, uint32_t a, int words) {
 X86_EXTERN_FUNC(__imp__sub_000C83B0);
 X86_FUNC(sub_000C83B0) {
     uint32_t player = kernel::R32(0x497100);
-    uint32_t old = 0, old_state = 0;
+    uint32_t old = 0, old_state = 0, type_at = 0, old_type = 0;
     bool forced = false;
     if (game::Opt().reticle_always && player > 0x10000 && !FreeCamOn()) {
         // the aiming reticle always, with no exception (any weapon, any state, the auto aim's lock or not): the game draws
@@ -170,12 +170,120 @@ X86_FUNC(sub_000C83B0) {
         kernel::W32(player + 0x884, 1);
         kernel::W32(player + 0x158, 8);
         forced = true;
+        // the weapons whose crosshair type draws nothing (the switch at 0xC8497 sends types 0, 4 to 12 and 15 to 0xC87EF, 12 having its own draw after it: the
+        // vintage guns among them) get the plain circle (type 1) for the draw, as TSPC's option shows a reticle with any weapon
+        type_at = 0x4A8D20 + kernel::R32(player + 4) * 0x1254;
+        old_type = kernel::R32(type_at);
+        if (old_type >= 4 && old_type <= 11 || old_type == 15 || old_type == 0 || old_type > 20) kernel::W32(type_at, 1);
+        else type_at = 0;
     }
     __imp__sub_000C83B0(ctx, base);
+    if (forced && type_at) kernel::W32(type_at, old_type);
     if (forced) {
         kernel::W32(player + 0x884, old);
         kernel::W32(player + 0x158, old_state);
     }
+}
+
+// The shot's accuracy (0x141150(player, kind), 1.0 the best, left in st0): the gun's own spread outside the aiming states.
+// The firing code asks it from 0x141238, 0x141588 and 0x141615 (the crosshair's sway at 0x1447FE and 0x14485A is left as it
+// is). With reticle_always the player is held aiming, so the shots go straight, as the same option of Homefront's TS2 does.
+X86_EXTERN_FUNC(__imp__sub_00141150);
+X86_FUNC(sub_00141150) {
+    uint32_t ret = kernel::R32(ctx.esp);
+    uint32_t who = kernel::R32(ctx.esp + 4), player = kernel::R32(0x497100);
+    __imp__sub_00141150(ctx, base);
+    if (game::Opt().reticle_always && who == player && player > 0x10000 && (ret == 0x141238 || ret == 0x141588 || ret == 0x141615)) {
+        x87_pop(ctx);
+        x87_push(ctx, 1.0);
+        static int logged = 0;
+        if (logged++ < 3) LOGR("reticle_always: shot accuracy held at 1.0 (called from %08X)", ret);
+    }
+}
+
+// Whether a story level's own camera is running (the opening flyby, mode 9 or 1: [0x4B2F70]) with the level loaded
+// ([0x4A46EC], the front end's from 100)
+bool CutsceneCamera() {
+    uint32_t mode = kernel::R32(0x4B2F70);
+    return kernel::R32(0x4A46EC) < 100 && mode != 0 && mode != 0xFFFFFFFFu;
+}
+
+// The firing code (0x141260, called from 0x144517 and 0x1448DC for the player in [0x497100]) spreads the shots and kicks the
+// gun by the player's state: aiming (state [player+0x158] 8, flag [player+0x884]) shoots straight along the reticle, the
+// hip does not. With reticle_always the pad's player fires as aiming, for the length of the call only (the state is put back).
+X86_EXTERN_FUNC(__imp__sub_00141260);
+X86_FUNC(sub_00141260) {
+    uint32_t player = kernel::R32(0x497100);
+    bool forced = false;
+    uint32_t old_state = 0, old_flag = 0;
+    if (game::Opt().reticle_always && player > 0x10000) {
+        uint32_t id = kernel::R32(player);
+        if (id < 4 && kernel::R32(0x2CE388 + id * 4) == 0) {
+            old_state = kernel::R32(player + 0x158);
+            old_flag = kernel::R32(player + 0x884);
+            forced = old_state != 8 || old_flag != 1;
+            if (forced) {
+                kernel::W32(player + 0x158, 8);
+                kernel::W32(player + 0x884, 1);
+                static int logged = 0;
+                if (logged++ < 3) LOGR("reticle_always: shot fired as aiming (state %u flag %u)", old_state, old_flag);
+            }
+        }
+    }
+    __imp__sub_00141260(ctx, base);
+    if (forced) {
+        kernel::W32(player + 0x158, old_state);
+        kernel::W32(player + 0x884, old_flag);
+    }
+}
+
+// The aim's unsteadiness (0x140E10, run each frame for the player in [0x497100]): its amplitudes at +0x174 and +0x17C
+// (raised by moving and firing) turn through a phase at +0x180 and +0x184 into the angles added to the view's yaw and pitch
+// at +0x188 and +0x18C, which the shots follow (0x146BF0: yaw + [+0x188], pitch + [+0x18C]). With reticle_always they are
+// left at zero for the pad's player, so the shots go straight along the reticle without the kick of recoil.
+X86_EXTERN_FUNC(__imp__sub_00140E10);
+X86_FUNC(sub_00140E10) {
+    __imp__sub_00140E10(ctx, base);
+    uint32_t player = kernel::R32(0x497100);
+    if (game::Opt().reticle_always && player > 0x10000) {
+        uint32_t id = kernel::R32(player);
+        if (id < 4 && kernel::R32(0x2CE388 + id * 4) == 0) {
+            kernel::W32(player + 0x188, 0);
+            kernel::W32(player + 0x18C, 0);
+            static int logged = 0;
+            if (logged++ < 2) LOGR("reticle_always: the aim's unsteadiness (recoil) held at zero for player %08X", player);
+        }
+    }
+}
+
+// The story cutscenes' black bars, if they are the 3D viewport made shorter: 0x1B49C0 sets a viewport's rectangle
+// (viewport, x0, y0, x1, y1, in the 640 x 480 screen: the log has 0 0 639 479 for the whole screen and 0 12 639 467 for the
+// pause screen). A full width one whose top and bottom margins are equal (a split screen's never are) is the cutscene's
+// cropped view: with no_letterbox it is made the whole screen's height.
+X86_EXTERN_FUNC(__imp__sub_001B49C0);
+X86_FUNC(sub_001B49C0) {
+    {
+        // every distinct rectangle the game gives a viewport, once (to see the cutscenes' own), and every one set while the
+        // level's own camera runs
+        static std::set<uint64_t> seen, seen_cut;
+        uint32_t k[4] = {kernel::R32(ctx.esp + 8), kernel::R32(ctx.esp + 0xC), kernel::R32(ctx.esp + 0x10), kernel::R32(ctx.esp + 0x14)};
+        uint64_t key = (uint64_t(k[0] & 0xFFFF) << 48) ^ (uint64_t(k[1] & 0xFFFF) << 32) ^ (uint64_t(k[2] & 0xFFFF) << 16) ^ (k[3] & 0xFFFF);
+        bool cut = CutsceneCamera();
+        if (cut ? (seen_cut.size() < 24 && seen_cut.insert(key).second) : (seen.size() < 24 && seen.insert(key).second))
+            LOGR("viewport%s: x %d..%d y %d..%d, set from %08X", cut ? " (level camera)" : "", int32_t(k[0]), int32_t(k[2]), int32_t(k[1]), int32_t(k[3]), kernel::R32(ctx.esp));
+    }
+    if (game::Opt().no_letterbox && CutsceneCamera()) {  // not the pause menu's, which closes the view in the same way
+        int32_t l = int32_t(kernel::R32(ctx.esp + 8)), t = int32_t(kernel::R32(ctx.esp + 0xC));
+        int32_t r = int32_t(kernel::R32(ctx.esp + 0x10)), b = int32_t(kernel::R32(ctx.esp + 0x14));
+        int32_t full_b = int32_t(kernel::R32(0x483F48));  // the screen's last row (0x1DF)
+        if (l <= 1 && r >= int32_t(kernel::R32(0x483F34)) - 1 && t >= 16 && t <= 170 && full_b > 0 && std::abs((full_b - b) - t) <= 2) {
+            static int logged = 0;
+            if (logged++ < 6) LOGR("letterbox: viewport rows %d..%d made 0..%d", t, b, full_b);
+            kernel::W32(ctx.esp + 0xC, 0);
+            kernel::W32(ctx.esp + 0x14, uint32_t(full_b));
+        }
+    }
+    __imp__sub_001B49C0(ctx, base);
 }
 
 X86_EXTERN_FUNC(__imp__sub_001B7440);
@@ -337,6 +445,19 @@ X86_EXTERN_FUNC(__imp__sub_001B75A0);
 X86_FUNC(sub_001B75A0) {
     uint32_t ret = kernel::R32(ctx.esp);
     HudTrace("rect", ret, ctx.esp + 4, 9);
+    if (CutsceneCamera()) {  // everything drawn as a rectangle while the level's own camera runs (the bars, if they are pictures)
+        static std::set<uint64_t> seen;
+        uint64_t key = (uint64_t(ret) << 32) ^ (kernel::R32(ctx.esp + 4) * 31u) ^ (kernel::R32(ctx.esp + 8) * 131u) ^ (kernel::R32(ctx.esp + 0xC) * 17u) ^ kernel::R32(ctx.esp + 0x10);
+        if (seen.size() < 40 && seen.insert(key).second)
+            LOGR("rect (level camera): from %08X words %d %d %d %d %d %d", ret, int32_t(kernel::R32(ctx.esp + 4)), int32_t(kernel::R32(ctx.esp + 8)),
+                 int32_t(kernel::R32(ctx.esp + 0xC)), int32_t(kernel::R32(ctx.esp + 0x10)), int32_t(kernel::R32(ctx.esp + 0x14)), int32_t(kernel::R32(ctx.esp + 0x18)));
+    }
+    if (!g_hud) {  // the rectangles drawn outside the play's HUD (cutscene bars?): once per caller
+        static std::set<uint32_t> seen;
+        if (seen.size() < 40 && seen.insert(ret).second)
+            LOGR("rect-out: from %08X words %d %d %d %d %d %d", ret, int32_t(kernel::R32(ctx.esp + 4)), int32_t(kernel::R32(ctx.esp + 8)),
+                 int32_t(kernel::R32(ctx.esp + 0xC)), int32_t(kernel::R32(ctx.esp + 0x10)), int32_t(kernel::R32(ctx.esp + 0x14)), int32_t(kernel::R32(ctx.esp + 0x18)));
+    }
     if (ret == 0xC5077 || ret == 0xC50A8 || ret == 0xC50D6 || ret == 0xC50F8) {  // the glow's four quarters
         if (float k = ArcStretch(); k > 1.001f)
             for (uint32_t a : {ctx.esp + 8, ctx.esp + 0xC}) {
@@ -350,6 +471,14 @@ X86_FUNC(sub_001B75A0) {
 X86_EXTERN_FUNC(__imp__sub_001B5E80);
 X86_FUNC(sub_001B5E80) {
     HudTrace("quad", kernel::R32(ctx.esp), ctx.esp + 4, 9);
+    if (CutsceneCamera() && !g_hud) {  // every distinct picture drawn outside the HUD while the level's own camera runs
+        static std::set<uint64_t> seen;
+        uint32_t a = ctx.esp + 4;
+        uint64_t key = (uint64_t(kernel::R32(ctx.esp)) << 32) ^ (uint64_t(std::lround(F(a + 4))) << 16) ^ uint64_t(std::lround(F(a + 12)));
+        if (seen.size() < 40 && seen.insert(key).second)
+            LOGR("quad (level camera): from %08X x %.0f..%.0f y %.0f..%.0f colour %08X tex %08X", kernel::R32(ctx.esp), double(F(a)), double(F(a + 8)),
+                 double(F(a + 4)), double(F(a + 12)), kernel::R32(a + 32), g_tex);
+    }
     {
         uint32_t a = ctx.esp + 4;
         float x0 = F(a), y0 = F(a + 4), x1 = F(a + 8), y1 = F(a + 12), k;

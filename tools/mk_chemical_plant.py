@@ -83,13 +83,24 @@ def tex_ids(xbr):
 stats = {'dam': 0, 'xbox': 0, 'converted': 0}
 
 
+def same_shape(b, t):
+    # the Xbox texture of the id is the level's own only when it has the shape of TSPC's picture of that id (a few ids are
+    # another picture there, turned a quarter: their coordinates would be wrong on it)
+    p = os.path.join(tspc, 'textures', '%d.rgb' % t)
+    if not os.path.exists(p): return True
+    w, h = struct.unpack_from('<II', b, 0)
+    return Image.open(p).size == (w, h)
+
+
 def add_texture(t, sources):
     k = 'textures/%04d.xbt' % t
-    if k in dam or k in files:
+    if k in files:
+        stats['dam'] += 1; return
+    if k in dam and (sources is not None or same_shape(dam[k], t)):
         stats['dam'] += 1; return
     if sources is None:
         b = xbox_file(k)
-        if b is not None:
+        if b is not None and same_shape(b, t):
             files[k] = b; stats['xbox'] += 1; return
     else:
         for P in sources:

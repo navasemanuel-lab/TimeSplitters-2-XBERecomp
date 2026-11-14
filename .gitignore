@@ -44,3 +44,7 @@ build*.err
 /tools/**/*.ogg
 /tools/**/*.wav
 /launcher_data/
+
+# python caches
+__pycache__/
+*.pyc

@@ -205,6 +205,12 @@ bool Keyboard(input::Pad& p) {
         p.ry = ry;
         any = true;
     }
+    // the MapMaker editor's cursor follows the mouse (the left stick it is moved by)
+    if (int16_t ex = 0, ey = 0; mouse::EditorStick(ex, ey)) {
+        p.lx = int16_t(std::clamp(int(p.lx) + ex, -int(kStickMax), int(kStickMax)));
+        p.ly = int16_t(std::clamp(int(p.ly) + ey, -int(kStickMax), int(kStickMax)));
+        any = true;
+    }
     if (any) p.connected = true;
     return any;
 }

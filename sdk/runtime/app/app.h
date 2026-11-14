@@ -76,7 +76,7 @@ struct Settings {
 Settings& Get();
 // the last time (steady clock, ms) the game ran a menu that takes the pointer, a pause menu as the front end's, and
 // the last time the view took the mouse in play: the renderer draws the scene without MSAA from a menu until play
-inline std::atomic<uint64_t> g_menu_ms{0}, g_play_ms{0};
+inline std::atomic<uint64_t> g_menu_ms{0}, g_play_ms{0}, g_pause_ms{0};  // g_pause_ms: the in-game pause menu was open (mouse.cpp's clock)
 // a title whose menus are 4:3 pictures sets this: out of play the frame keeps 4:3 inside a wider output
 inline std::atomic<bool> g_pillarbox_menus{false};
 
