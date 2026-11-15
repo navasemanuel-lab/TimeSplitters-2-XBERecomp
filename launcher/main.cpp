@@ -406,9 +406,7 @@ void OptionsTab() {
         CheckBox("Un solo golpe en Historia", "one_hit", false);
     }
     if (ImGui::CollapsingHeader("Packs de recursos")) {
-        CheckBox("Armas de Beta Reborn (resourcepacks/beta_reborn)", "beta_reborn", false);
-        CheckBox("Texturas de la Christmas Edition (resourcepacks/xmas)", "xmas_textures", false);
-        CheckBox("Sonidos de Homefront (resourcepacks/homefront/sounds)", "homefront_sfx", false);
+        CheckBox("TS2 Beta Weapons (resourcepacks/beta_weapons)", "beta_reborn", false);
         ImGui::TextDisabled("Chemical Plant está en la lista de Arcade si resourcepacks/chemical_plant existe.");
     }
     ImGui::EndChild();

@@ -38,8 +38,8 @@ std::string BetaReborn(const std::string& lower) {
         std::error_code ec;
         return fs::exists(eagle, ec) ? eagle.string() : std::string();
     }
-    if (rel != "gun.pak" && rel.rfind("story/", 0) != 0 && rel.rfind("arcade/", 0) != 0) return {};
-    fs::path pak = app::ExeDir() / "resourcepacks" / "beta_reborn" / rel;
+    if (rel != "gun.pak") return {};  // only the guns: the level paks of the mod are not used
+    fs::path pak = app::ExeDir() / "resourcepacks" / "beta_weapons" / rel;
     std::error_code ec;
     if (!fs::exists(pak, ec)) return {};
     static int said = 0;

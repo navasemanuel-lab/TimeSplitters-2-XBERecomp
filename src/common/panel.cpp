@@ -382,8 +382,6 @@ void Audio() {
     int out = int(std::min<uint32_t>(st.audio_out, 3));
     if (ComboTr(Tr("Salida de audio (al reiniciar)"), &out, kOut, 4)) st.audio_out = uint32_t(out);
     ImGui::Separator();  // the gain (audio_boost_db in settings.toml) has no slider: it keeps its setting, 6 dB by default
-    ImGui::Checkbox(Tr("Sonidos de Homefront (resourcepacks/homefront/sounds)"), &o.homefront_sfx);
-    ImGui::TextWrapped("%s", Tr("Cambia los efectos por los de Homefront, ajustados a la frecuencia y el formato de los originales. Se aplica al cargar el siguiente nivel."));
     ImGui::TextWrapped("%s", Tr("El volumen de la musica y de los efectos se ajusta en Options > Audio Options del juego."));
 }
 
@@ -408,7 +406,7 @@ void Gameplay() {
     ImGui::Checkbox(Tr("Mostrar siempre la reticula (sin apuntar)"), &o.reticle_always);
     ImGui::TextWrapped("%s", Tr("La mira se ve siempre, no solo al apuntar o con un objetivo cerca. Necesita la mira activada en las opciones del juego."));
     ImGui::Checkbox(Tr("Arcos de vida y escudo altos, como en TS2 Redux (apagado: tamano original)"), &o.arcs_tall);
-    ImGui::Checkbox(Tr("Armas de Beta Reborn (resourcepacks/beta_reborn)"), &o.beta_reborn);
+    ImGui::Checkbox(Tr("TS2 Beta Weapons (resourcepacks/beta_weapons)"), &o.beta_reborn);
     ImGui::TextWrapped("%s", Tr("Cambia los modelos de las armas por los del mod Beta Reborn. Se aplica al cargar el siguiente nivel."));
     {
         // the disc's five text languages, by the console's setting (XC_LANGUAGE) that picks each: the game's tables are
@@ -422,8 +420,6 @@ void Gameplay() {
         if (ImGui::Combo(Tr("Idioma del juego (al reiniciar)"), &cur, kNames, 5)) language = kXc[cur];
         ImGui::TextWrapped("%s", Tr("El texto de los menus y del juego. Las voces siguen en ingles."));
     }
-    if (ImGui::Checkbox(Tr("Texturas de la Christmas Edition (resourcepacks/xmas)"), &o.xmas_textures)) SetXmasTextures(o.xmas_textures);
-    ImGui::TextWrapped("%s", Tr("Cambia las texturas por las de la edicion navidena. Se aplica al instante."));
     ImGui::Separator();
     ImGui::Checkbox(Tr("Apuntado con giroscopio (DualSense, DualShock 4, Switch Pro)"), &o.gyro_aim);
     int gyro = int(o.gyro_speed);

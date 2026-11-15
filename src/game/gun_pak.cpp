@@ -63,7 +63,7 @@ void Load() {
     g_entries.clear();
     bool beta = false;
     if (game::Opt().beta_reborn) {  // the Beta Reborn gun.pak (pak_replace.cpp) is the game's too
-        std::ifstream bf(app::ExeDir() / "resourcepacks" / "beta_reborn" / "gun.pak", std::ios::binary);
+        std::ifstream bf(app::ExeDir() / "resourcepacks" / "beta_weapons" / "gun.pak", std::ios::binary);
         if (bf) { g_pak.assign(std::istreambuf_iterator<char>(bf), {}); beta = true; }
     }
     if (!beta && game::Opt().default_gun) {  // the retail gun.pak with the textured Default Gun

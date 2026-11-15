@@ -146,7 +146,7 @@ const Pair kEnglish[] = {
     {"Lanzacohetes en todos los niveles de Historia", "Rocket Launcher in every Story level"},
     {"Se da al empezar o reiniciar un nivel de Historia, con la municion llena.",
      "Given when a Story level starts or restarts, with full ammo."},
-    {"Armas de Beta Reborn (resourcepacks/beta_reborn)", "Beta Reborn weapons (resourcepacks/beta_reborn)"},
+    {"TS2 Beta Weapons (resourcepacks/beta_weapons)", "TS2 Beta Weapons (resourcepacks/beta_weapons)"},
     {"Cambia los modelos de las armas por los del mod Beta Reborn. Se aplica al cargar el siguiente nivel.",
      "Replaces the weapon models with the Beta Reborn mod's. Applies when the next level loads."},
     {"Texturas de la Christmas Edition (resourcepacks/xmas)", "Christmas Edition textures (resourcepacks/xmas)"},

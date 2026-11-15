@@ -1,58 +1,92 @@
-# Game Title - XBE Recomp
+# TimeSplitters 2 - XBE Recomp
 
-An unofficial native PC port of the original Xbox version of Game Title, with extended graphics options and other enhancements.
+An unofficial native PC port of **TimeSplitters 2** (Xbox, USA release), made by static recompilation of the game's `default.xbe`, with a Direct3D 12 renderer, mouse and keyboard, modern controller support and a number of fixes and extras over the original.
 
-This port was created using the [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool.
+Built with the [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool.
 
 > [!NOTE]
-> This project does not include any game assets. You must provide the files from your own legally acquired copy of the game to install or build.
+> This project does not include the game. You must provide your own legally acquired copy of the **USA Xbox** version (an `.iso`, or the extracted files). Other regions or versions are not supported: the launcher checks the `default.xbe` of the image and refuses a different one.
 
 ## Installation
 
-- Put your game files in the `assets` folder. This can be an ISO, or the extracted data files.
-- Run `Game.exe`. The first start compiles the game's code for your PC, this only happens once.
-- Recomp settings can be adjusted in `settings.toml` beside the exe.
+1. Download the release zip and extract it anywhere.
+2. Run `TS2Launcher.exe`. Press **Seleccionar ISO USA...** and pick your ISO (or put the extracted game files, `default.xbe` first, in the `assets` folder).
+3. Press **JUGAR**. The first start compiles the game's code for your PC with your own copy; it takes a few minutes and happens once.
+4. In game, **F1** opens the settings panel (Back + Start on a pad).
 
-## Features
+The launcher has five pages: Play, Options, Profiles, MapMaker maps and Updates (new versions are published as GitHub releases and installed from there).
 
-### Display
+## What is different from the original
 
+### Controls
+- Keyboard and mouse as the first player's pad, every key rebindable (primary and alternate). True 1:1 raw-input mouse aim, with separate sensitivity, vertical speed and aim speed; the mouse also works in the front end's menus.
+- Xbox, PlayStation and Switch controllers, hot plugging, rumble, and optional gyro aiming (DualSense, DualShock 4, Switch Pro).
+- Per-axis speed for the stick and the mouse, optional auto lookahead, adjustable crosshair sway.
+- Button prompts drawn as the buttons of the input in use (keyboard, Xbox, PlayStation, Switch), and the game's A and Y button pictures drawn the right way up.
+- Typing on the profile name screen with the PC keyboard.
+- Free camera (F6) for looking around a level.
 
-### Graphics
+### Video and interface
+- Direct3D 12 renderer; field of view up to 100.
+- Menus, loading screens and movies stretched to the screen's shape instead of 4:3 with bars; the front end's frame laid out for wide screens as TS2 Redux does it.
+- HUD options: ammunition display larger and lower, tall health and shield arcs, crosshair always shown, a TimeSplitters 1 style health bar, HUD pictures kept at the shape they were made for, and a weapon bar like Future Perfect's.
+- HD front-end pictures and HUD pieces (TS2 Redux, bekoha), in the release as `hd_textures.bin` and `hd_hud.bin`.
+- The levels' fine detail textures on every piece of the level, not only the near ones.
+- Cutscene black bars drawn correctly at the start and the end of a cutscene (they can be turned off).
+- Lights: the lights that follow models and the light of particles are kept across frames, so they do not flicker.
+- Performance overlay and logging (frames a second, where each frame's time goes).
 
-### Controller
-Supports Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
+### Fixes
+- The C runtime's trigonometry and square root (`sin`, `cos`, `sqrt`, `asin`, `acos`) returned NaN now and then in recompiled code. That made wall cameras and turrets hang straight down, soldiers turn away from the player and models flicker. Fixed.
+- The game's speed is kept in step with a 60 Hz frame cap, and a few crashes of the original code (a bad object in a screen's list that closed the game in Aztec Ruins, among others) are guarded.
+- Sounds that the original opened from the developers' own PC paths (and so stayed silent) are read from `sounds.pak` instead, and every character's whole voice is loaded in Story, so soldiers die with more than one or two cries.
 
-### General
+### Content that was in the game but cut
+- Hidden Arcade maps **Dam** and **Wild West** opened in the Arcade list.
+- The MapMaker's cut **Gothic tileset**, MapMaker Story maps playable by every connected controller (up to four) and the MapMaker's memory caps lifted.
+- The cut **Default Gun** (a Desert Eagle) in the Arcade weapon lists.
+- Characters that are in the game's tables but not in the Select Character list (Gasmask Special, the NeoTokyo pedestrians, X-Ray Skel).
+- Robot Factory's cut opening camera sequence (option).
+- **Chemical Plant**: the TimeSplitters 1 level, converted from the PS2 game's data into the Arcade map list. It is made from your own files by `tools/mk_chemical_plant.py` and is shown only if `resourcepacks/chemical_plant` exists. It is a work in progress (some floor and brick textures are misaligned).
+- An **Unlock Everything** line in Player Options, and a **Quit to Desktop** line in the main menu.
 
-### Miscellaneous
-- **Boot Splash** - Place a `splash.png` (or `.bmp`) beside the exe to display a splash screen at launch.
+### Options
+Options that change the game's balance or look are off by default, so the defaults behave like the original:
+Rocket Launcher or Silenced Pistol in every Story level, infinite health, infinite ammunition, one-hit kills, always-shown crosshair, TimeSplitters 1 health bar, and **TS2 Beta Weapons**.
 
-## System Requirements
+**TS2 Beta Weapons** replaces the gun models with the beta weapons from `resourcepacks/beta_weapons/gun.pak` (only the gun models; no level is touched). The release includes that pak.
 
-### Minimum
-- **OS**
-  - Windows 10 64-bit
-- **GPU** with support for Direct3D 12
+### Resource packs
+A folder under `resourcepacks` beside the exe replaces what you choose, in the style of a texture or sound pack. Nothing here is required to play:
+- `beta_weapons/gun.pak`: the beta weapons (included in the release).
+- `default_gun/gun.pak` and `chemical_plant/`: made from your own game files by the scripts in `tools`.
+- `xmas/xmas.bin` and `homefront/sounds/*.wav`: still read by the game if you provide them, but neither is distributed or offered by the launcher.
+
+### Launcher
+`TS2Launcher.exe` (Dear ImGui, Direct3D 11): a blue theme with the game logo and rotating key art, ISO check and import, the options above, profile and MapMaker map import and export, and updates from GitHub releases (a token can be set for a private repository).
+
+### Tools
+`tools/` has the Python scripts used to build this: the HD texture bundles, button icon sheets, language tables, pak inspection, and converters for TimeSplitters 1 level data (`ts1level.py`, `ts1_to_xbr.py`) used for Chemical Plant.
+
+## System requirements
+
+- Windows 10 64-bit
+- A GPU with support for Direct3D 12
+- Your own copy of TimeSplitters 2 (Xbox, USA)
 
 ## Building
 
-### 1. Clone the Repository
-Clone this repository using [Git](https://git-scm.com/).
-
-### 2. Add the Required Game Files
-Place your extracted game data files in the `assets` folder. `default.xbe` must be there, with the game's folders beside it.
-
-### 3. Install Dependencies
-Install Visual Studio 2022 with **Desktop development with C++**, **C++ Clang tools for Windows** and **C++ CMake tools for Windows** (`build.bat` offers to add the last two).
-
-### 4. Build the Project
-Run `build.bat`. The first build recompiles the game and takes a while. The exe is written to `out\build\release`.
+1. Clone this repository.
+2. Put the extracted game files in `assets` (`default.xbe` with the game's folders beside it).
+3. Install Visual Studio 2022 with **Desktop development with C++**, **C++ Clang tools for Windows** and **C++ CMake tools for Windows** (`build.bat` offers to add the last two).
+4. Run `build.bat`. The first build recompiles the game and takes a while. The exe and the launcher are written to `out\build\release`.
+5. `release.bat` builds the release zip.
 
 ## Credits
 
 - [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp), the recompiler and runtime this is built on.
 - [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) for the overridable function layout and instruction hooks.
-- [Zydis](https://github.com/zyantific/zydis) for decoding x86 instructions, [toml++](https://github.com/marzer/tomlplusplus) for the configs, [Dear ImGui](https://github.com/ocornut/imgui) for the settings overlay and [SDL](https://github.com/libsdl-org/SDL) for the window, input and controllers.
+- [Zydis](https://github.com/zyantific/zydis), [toml++](https://github.com/marzer/tomlplusplus), [Dear ImGui](https://github.com/ocornut/imgui) and [SDL](https://github.com/libsdl-org/SDL).
+- TS2 Redux and bekoha for the HD pictures, fonts and HUD pieces.
 
-The full list of credits for the game content, Redux assets and references is in [CREDITS.md](CREDITS.md).
+The full list of credits is in [CREDITS.md](CREDITS.md). TimeSplitters 2 belongs to its rights holders; this is a fan project and is not affiliated with them.
