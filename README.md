@@ -20,7 +20,7 @@ Built with the [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool.
 
 1. Download the release zip and extract it anywhere.
 2. Run `TS2Launcher.exe`. Press **Seleccionar ISO USA...** and pick your ISO (or put the extracted game files, `default.xbe` first, in the `assets` folder).
-3. Press **JUGAR**. The first start compiles the game's code for your PC with your own copy; it takes a few minutes and happens once.
+3. Press **JUGAR**.
 4. In game, **F1** opens the settings panel (Back + Start on a pad).
 
 The launcher has five pages: Play, Options, Profiles, MapMaker maps and Updates (new versions are published as GitHub releases and installed from there).

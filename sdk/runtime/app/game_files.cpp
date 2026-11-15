@@ -95,6 +95,8 @@ bool FindGame(GameFiles& game) {
         return false;
     };
 
+    // what was wrong with the images that could not be used, for the message when no game is found
+    std::wstring problems;
     std::vector<uint8_t> xbe;
     if (!assets.empty() && ReadHostFile(assets / IMAGE_XBE, xbe) && consider(assets, std::move(xbe), nullptr)) return true;
     for (const fs::path& iso : isos) {
@@ -102,10 +104,12 @@ bool FindGame(GameFiles& game) {
         std::string error;
         if (!disc->Open(iso, error)) {
             LOGW("game: %s: %s", iso.string().c_str(), error.c_str());
+            problems += std::wstring(1, wchar_t(10)) + iso.filename().wstring() + L": could not be read as a game disc image (damaged, cut short or not an Xbox disc).";
             continue;
         }
         if (!disc->Load(IMAGE_XBE, xbe)) {
             LOGW("game: %s has no %s", iso.string().c_str(), IMAGE_XBE);
+            problems += std::wstring(1, wchar_t(10)) + iso.filename().wstring() + L": has no game executable (damaged or not the game's disc).";
             continue;
         }
         if (consider(iso, std::move(xbe), std::move(disc))) return true;
@@ -116,7 +120,9 @@ bool FindGame(GameFiles& game) {
         if (kGame.launcher && fs::exists(ExeDir() / kGame.launcher, ec) &&
             intptr_t(ShellExecuteW(nullptr, L"open", (ExeDir() / kGame.launcher).c_str(), nullptr, ExeDir().c_str(), SW_SHOWNORMAL)) > 32)
             return false;
-        MessageBoxW(nullptr, kGame.missing, kGame.short_title, MB_ICONERROR);
+        std::wstring text = kGame.missing;
+        if (!problems.empty()) text += std::wstring(2, wchar_t(10)) + problems;
+        MessageBoxW(nullptr, text.c_str(), kGame.short_title, MB_ICONERROR);
         return false;
     }
     std::wstring text = other_name.filename().wstring() +

@@ -158,7 +158,8 @@ X86_FUNC(sub_00149810) {
     }
     if (StoryProper())
         for (size_t i = 0; i < sizeof(kGiven) / sizeof(kGiven[0]); i++)
-            if (kGiven[i].enabled()) {
+            {  // asked for whether the option is on or not: switched on in the panel and then a restart (which does not load
+               // the level again), the gun's assets are already there. Nothing is given while the option is off.
                 AskGun(ctx, kGiven[i]);
                 g_asked[i] = true;
             }

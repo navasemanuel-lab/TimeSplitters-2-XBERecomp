@@ -48,3 +48,5 @@ build*.err
 # python caches
 __pycache__/
 *.pyc
+
+/TS2.dll

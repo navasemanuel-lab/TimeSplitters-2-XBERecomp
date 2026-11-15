@@ -20,6 +20,10 @@ struct Binding {
     uint16_t bits;      // Pad::buttons
     int stick;          // 1 forward 2 back 3 left 4 right on the left stick, 0 none
     int def, alt1, alt2;  // the default key; its default alternate; a key that works as well unless another action has it
+    // the game's action this control is (0 fire, 1 alternate fire, 2 activate, 3 reload, 4 aim, 5 crouch, 14 zoom in, 15 zoom out,
+    // 16 previous weapon, 17 next weapon), -1 none: in play the key presses the pad button the game's own layout (Default,
+    // Digital, Classic, Radical...) has the action on, not the button it has in the layout the defaults above were made for
+    int act = -1;
 };
 constexpr int kWheelUp = 0x100, kWheelDown = 0x101;  // the mouse wheel's notches, bindable as keys
 extern const Binding kBindings[];

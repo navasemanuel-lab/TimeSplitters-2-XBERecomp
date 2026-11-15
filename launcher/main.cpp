@@ -128,7 +128,7 @@ const TrPair kEnglish[] = {
     {"Copiando la ISO a ", "Copying the ISO to "},
     {"No se pudo copiar la ISO (error ", "The ISO could not be copied (error "},
     {"), ¿hay espacio en el disco?", "), is there space on the disk?"},
-    {"ISO USA instalada. Ya puedes jugar: la primera vez el juego prepara su código y tarda un rato.", "USA disc copy installed. You can play now: the first time, the game prepares its code and takes a while."},
+    {"ISO USA instalada. Ya puedes jugar.", "USA disc copy installed. You can play now."},
     {"Opciones guardadas en settings.toml.", "Options saved in settings.toml."},
     {"Guardar", "Save"},
     {"Descartar cambios", "Discard changes"},
@@ -256,7 +256,6 @@ const TrPair kEnglish[] = {
     {"JUGAR", "PLAY"},
     {"Abrir la carpeta del juego", "Open the game folder"},
     {"Ver el registro (log)", "View the log"},
-    {"La primera vez que juegas, el juego prepara su código para tu PC con tu propia copia del juego: tarda unos minutos y solo pasa una vez. ", "The first time you play, the game prepares its code for your PC from your own copy of the game: it takes a few minutes and happens only once. "},
     {"En el juego, F1 abre el panel de ajustes.", "In the game, F1 opens the settings panel."},
     {"Versión ", "Version "},
     {"Los perfiles del juego (partidas, niveles y personajes desbloqueados).", "The game's profiles (saves, unlocked levels and characters)."},
@@ -528,7 +527,7 @@ void ImportIso() {
             return;
         }
         CheckGame();
-        Say(T("ISO USA instalada. Ya puedes jugar: la primera vez el juego prepara su código y tarda un rato."));
+        Say(T("ISO USA instalada. Ya puedes jugar."));
     });
 }
 
@@ -1304,8 +1303,7 @@ void PlayTab() {
     if (ImGui::Button(T("Ver el registro (log)"), ImVec2(half, 0))) ShellExecuteW(nullptr, L"open", (g_exe / "logs").c_str(), nullptr, nullptr, SW_SHOWNORMAL);
     ImGui::Dummy(ImVec2(0, 10));
     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-    ImGui::TextWrapped("%s", (std::string(T("La primera vez que juegas, el juego prepara su código para tu PC con tu propia copia del juego: tarda unos minutos y solo pasa una vez. ")) +
-                              T("En el juego, F1 abre el panel de ajustes.")).c_str());
+    ImGui::TextWrapped("%s", T("En el juego, F1 abre el panel de ajustes."));
     ImGui::PopStyleColor();
 }
 
