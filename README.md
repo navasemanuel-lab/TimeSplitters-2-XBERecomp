@@ -7,6 +7,15 @@ Built with the [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool.
 > [!NOTE]
 > This project does not include the game. You must provide your own legally acquired copy of the **USA Xbox** version (an `.iso`, or the extracted files). Other regions or versions are not supported: the launcher checks the `default.xbe` of the image and refuses a different one.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Main menu](docs/screenshots/menu.jpg) | ![Gameplay](docs/screenshots/gameplay.jpg) |
+| Redesigned wide-screen main menu, with the big logo and a Quit to Desktop line | Gameplay with the larger ammunition display, HD HUD pieces and the radar |
+| ![Weapon bar](docs/screenshots/weapon_bar.png) | ![HD text](docs/screenshots/hd_text.png) |
+| The Future Perfect style weapon bar | HD text for the level captions |
+
 ## Installation
 
 1. Download the release zip and extract it anywhere.
