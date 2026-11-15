@@ -21,4 +21,20 @@ rem exe it starts
 del /q "%OUT%\compiler\*.dll" 2>nul
 for %%f in (msvcp140 vcruntime140) do copy /y "%VCRUNTIME%\%%f.dll" "%OUT%\compiler\" >nul
 rem the compiler folder without its work folder: no game code goes in the zip, the first start builds it
-7z a "%GAME_EXE%.zip" ".\%OUT%\%GAME_EXE%.exe" ".\%OUT%\release\assets" ".\%OUT%\compiler" .\README.md .\CREDITS.md ".\%OUT%\TS2Launcher.exe" ".\%OUT%\art" ".\%OUT%\hd_textures.bin" ".\%OUT%\hd_hud.bin" ".\%OUT%\button_icons.bin" ".\%OUT%\weapon_icons.bin" ".\%OUT%\lang" ".\%OUT%\resourcepacks\beta_weapons" "%SDK%\THIRD_PARTY.txt" "%VCRUNTIME%\msvcp140.dll" "%VCRUNTIME%\vcruntime140.dll" "%VCRUNTIME%\vcruntime140_1.dll" -xr!work
+rem Windows' own tar writes the zip (no 7-Zip needed): a staging folder with exactly what ships
+set "STAGE=%OUT%\stage"
+rd /s /q "%STAGE%" 2>nul
+mkdir "%STAGE%\assets"
+copy /y "%OUT%\%GAME_EXE%.exe" "%STAGE%\" >nul
+copy /y "%OUT%\TS2Launcher.exe" "%STAGE%\" >nul
+for %%f in (README.md CREDITS.md) do copy /y "%%f" "%STAGE%\" >nul
+for %%f in (hd_textures.bin hd_hud.bin button_icons.bin weapon_icons.bin) do copy /y "%OUT%\%%f" "%STAGE%\" >nul
+copy /y "%SDK%\THIRD_PARTY.txt" "%STAGE%\" >nul
+for %%f in (msvcp140 vcruntime140 vcruntime140_1) do copy /y "%VCRUNTIME%\%%f.dll" "%STAGE%\" >nul
+robocopy "%OUT%\art" "%STAGE%\art" /e /njh /njs /nfl /ndl >nul
+robocopy "%OUT%\lang" "%STAGE%\lang" /e /njh /njs /nfl /ndl >nul
+robocopy "%OUT%\resourcepacks\beta_weapons" "%STAGE%\resourcepacks\beta_weapons" /e /njh /njs /nfl /ndl >nul
+robocopy "%OUT%\compiler" "%STAGE%\compiler" /e /xd work /njh /njs /nfl /ndl >nul
+tar -a -c -f "%GAME_EXE%.zip" -C "%STAGE%" . || exit /b 1
+rd /s /q "%STAGE%"
+for %%z in ("%GAME_EXE%.zip") do echo %GAME_EXE%.zip: %%~zz bytes

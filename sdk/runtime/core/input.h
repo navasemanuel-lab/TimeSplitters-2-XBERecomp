@@ -15,7 +15,8 @@ struct Pad {
 enum class Family : uint8_t { None, Xbox, PlayStation4, PlayStation5, Switch, Other };
 Family PadFamily(int port);
 
-void Init();  // window thread, before boot
+void Init();  // window thread, before boot; the game code window starts it earlier
+uint16_t HeldOnAnyController();  // face buttons as XINPUT_GAMEPAD_A/B/X/Y masks, GameInfo::pad left out
 // the controller on that port, then GameInfo::pad
 Pad Poll(int port);
 Pad Read(int port);  // the controller alone, without GameInfo::pad

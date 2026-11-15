@@ -6,6 +6,7 @@ title = 0x4553000A
 entry = 0x1CEF99
 xdk = 4721
 out = "generated/game"
+library = "TS2.dll"  # <exe>.dll, which the executable delay loads
 partitions = 64
 code_sections = [".text", "D3D", "XGRPH", "DSOUND", "XNET", "XPP"]
 
