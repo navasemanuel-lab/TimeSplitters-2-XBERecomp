@@ -25,51 +25,47 @@ Built with the [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool.
 
 The launcher has five pages: Play, Options, Profiles, MapMaker maps and Updates (new versions are published as GitHub releases and installed from there).
 
-## What is different from the original
-
-### Controls
+### What is different from the original
 - Keyboard and mouse as the first player's pad, every key rebindable (primary and alternate). True 1:1 raw-input mouse aim, with separate sensitivity, vertical speed and aim speed; the mouse also works in the front end's menus.
 - Xbox, PlayStation and Switch controllers, hot plugging, rumble, and optional gyro aiming (DualSense, DualShock 4, Switch Pro).
 - Per-axis speed for the stick and the mouse, adjustable crosshair sway.
 - Button prompts drawn as the buttons of the input in use (keyboard, Xbox, PlayStation, Switch), and the game's A and Y button pictures drawn the right way up.
 - Typing on the profile name screen with the PC keyboard.
 - Free camera (F6) for looking around a level.
+- Options that change the game's balance or look are off by default, so the defaults behave like the original:
+  Rocket Launcher in every Story level, infinite health, one-hit kills, always-shown crosshair, TimeSplitters 1 health bar, and **TS2 Beta Weapons**.
+- An **Unlock Everything line in Player Options, and a **Quit to Desktop** line in the main menu.
+- TS2 Beta Weapons replaces the gun models with the beta weapons from `resourcepacks/beta_weapons/gun.pak` (only the gun models; no level is touched). The release includes that pak.
 
-### Video and interface
-- Direct3D 12 renderer; field of view up to 100.
-- Menus, loading screens and movies stretched to the screen's shape instead of 4:3 with bars; the front end's frame laid out for wide screens as TS2 Redux does it.
-- HUD options: ammunition display larger and lower, tall health and shield arcs, crosshair always shown, a TimeSplitters 1 style health bar, and a weapon bar like Future Perfect's.
-- Real wide screen at 16:9, 16:10, 21:9 and 32:9 (or the shape of your screen): the 3D view widens at the same vertical angle, and the HUD pictures are kept at the shape they were made for, at the screen's edges, instead of stretched. Bars appear only where the chosen shape does not fit the window.
-- HD front-end pictures and HUD pieces (TS2 Redux, bekoha), in the release as `hd_textures.bin` and `hd_hud.bin`.
-- The levels' fine detail textures on every piece of the level, not only the near ones.
-- Lights: the lights that follow models and the light of particles are kept across frames.
-- Performance overlay and logging (frames a second, where each frame's time goes).
 
 
 ### Display
-- **Display Mode:** Fullscreen, Borderless or Windowed. The monitor it opens on can be chosen.
+- **Display Mode:** Fullscreen, or Windowed. The monitor it opens on can be chosen.
 - **Resolution:** the output's size, defaulting to your desktop resolution instead of the original 640x480.
 - **Aspect Ratio:** the screen's own, or 4:3, 16:9, 16:10, 21:9 or 32:9. The 3D view widens at the same vertical angle and the HUD pictures stay at the shape they were made for, at the screen's edges. Bars appear only where the chosen shape does not fit the window.
 - **Internal Resolution:** from the console's own 480 lines up to 5K (2880p), the highest it goes: Original, Native (the window's own pixels), 720p, 1080p, 1440p, 2160p and 2880p. The scene is drawn at that size and scaled to the output.
 - **Field of View:** 60 to 100 degrees (the original is 60).
-- **Max Frame Rate:** a custom cap, or uncapped, replacing the Xbox's 30 FPS limit.
-- **V-Sync:** reduces screen tearing. A low-latency mode keeps one frame queued for the display instead of two.
-- **HDR Output:** HDR10 when Windows HDR is on, with the game's white and its peak brightness adjustable.
+- **V-Sync:** reduces screen tearing. 
+- **HDR Output:** HDR10 when Windows HDR is on.
 - **Performance Overlay:** frames a second and where each frame's time goes, optionally saved in the log.
 - **Menus, Loading Screens and Movies:** stretched to the screen's shape instead of 4:3 with bars.
 - **Cutscenes Without Black Bars:** the cutscenes' bars are not drawn and the picture fills the screen.
 - **Language:** the console's language the game reads at start.
+- Performance overlay and logging (frames a second, where each frame's time goes).
 
 ### Graphics
 - **MSAA:** 2x, 4x or 8x multisampling on the scene.
-- **Subpixel Morphological Antialiasing (SMAA):** enables SMAA to smooth jagged edges across the whole frame with a softer image. SMAA also smooths alpha-tested edges such as fences and foliage, and can be combined with MSAA. FXAA is there as a lighter alternative.
+- **Subpixel Morphological Antialiasing (SMAA):** enables SMAA to smooth jagged edges across the whole frame with a softer image. SMAA also smooths alpha-tested edges such as fences and foliage, and can be combined with MSAA. FXAA is   there as a lighter alternative.
 - **Anisotropic Filtering:** 2x to 16x forced on every texture, or as the game asks.
 - **Depth and Seams:** depth rounded to the console's units so nearly flat surfaces tie as they did on the Xbox (no flicker), and conservative rasterization so there are no see-through cracks between pieces of level geometry.
-- **Picture:** brightness, saturation (the PS2's picture was the more vivid) and contrast.
+- **Picture:** brightness, saturation and contrast.
 - **Fog:** can be turned off, and the scene is then drawn clear to the far plane.
 - **Console Effects:** heat shimmer around fire, the soft atmosphere filter, motion trails and the extra rain and snow trails, each can be switched on or off.
-- **Smooth Lighting:** the level's walls lit by fire and explosions with smoothed normals, not one flat value a face.
+- **Smooth Lighting:** - the lights that follow models and the light of particles are kept across frames.
 - **Fitting to the GPU:** the first run measures how fast the GPU is and lowers the internal resolution if the frames take too long. On an integrated GPU it uses reduced precision, no MSAA and at most 4x anisotropic filtering.
+- **HUD options:** ammunition display larger and lower, tall health and shield arcs, crosshair always shown, a TimeSplitters 1 style health bar, and a weapon bar like Future Perfect's.
+- HD front-end pictures and HUD pieces (TS2 Redux, bekoha), in the release as `hd_textures.bin` and `hd_hud.bin`.
+
 
 ### Multiplayer
 There is no online service: the game's System Link (its local network mode) runs on the PC's network, and Xbox Live does not work (its servers no longer exist).
@@ -83,15 +79,7 @@ There is no online service: the game's System Link (its local network mode) runs
 - The MapMaker's cut **Gothic tileset**, MapMaker Story maps playable by every connected controller (up to four) and the MapMaker's memory caps lifted.
 - The cut **Default Gun** (a Desert Eagle) in the Arcade weapon lists.
 - Characters that are in the game's tables but not in the Select Character list (Gasmask Special, Consultant, the NeoTokyo pedestrians, X-Ray Skel).
-- **Chemical Plant**: the TimeSplitters 1 level, converted from the PS2 game's data into the Arcade map list. It is made from your own files by `tools/mk_chemical_plant.py` and is shown only if `resourcepacks/chemical_plant` exists. It is a work in progress (some floor and brick textures are misaligned).
-
-
-### Options
-Options that change the game's balance or look are off by default, so the defaults behave like the original:
-Rocket Launcher in every Story level, infinite health, one-hit kills, always-shown crosshair, TimeSplitters 1 health bar, and **TS2 Beta Weapons**.
-- An **Unlock Everything** line in Player Options, and a **Quit to Desktop** line in the main menu.
-
-**TS2 Beta Weapons** replaces the gun models with the beta weapons from `resourcepacks/beta_weapons/gun.pak` (only the gun models; no level is touched). The release includes that pak.
+- **Chemical Plant**: the TimeSplitters 1 level, converted from the PS2 game's data into the Arcade map list. It is made from your own files by `tools/mk_chemical_plant.py` and is shown only if `resourcepacks/chemical_plant` exists.
 
 
 ### Launcher
