@@ -14,7 +14,7 @@ Built with the [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp) tool.
 | ![Main menu](docs/screenshots/menu.jpg) | ![Gameplay](docs/screenshots/gameplay.jpg) |
 | Redesigned wide-screen main menu, with the big logo and a Quit to Desktop line | Gameplay with the larger ammunition display |
 | ![Weapon bar](docs/screenshots/weapon_bar.png) | ![HD text](docs/screenshots/hd_text.png) |
-| The Future Perfect style weapon bar | HD text for the level captions |
+| The Future Perfect style weapon bar | HD text |
 
 ## Installation
 
