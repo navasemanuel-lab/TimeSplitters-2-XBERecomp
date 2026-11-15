@@ -21,7 +21,7 @@ The launcher has five pages: Play, Options, Profiles, MapMaker maps and Updates 
 ### Controls
 - Keyboard and mouse as the first player's pad, every key rebindable (primary and alternate). True 1:1 raw-input mouse aim, with separate sensitivity, vertical speed and aim speed; the mouse also works in the front end's menus.
 - Xbox, PlayStation and Switch controllers, hot plugging, rumble, and optional gyro aiming (DualSense, DualShock 4, Switch Pro).
-- Per-axis speed for the stick and the mouse, optional auto lookahead, adjustable crosshair sway.
+- Per-axis speed for the stick and the mouse, adjustable crosshair sway.
 - Button prompts drawn as the buttons of the input in use (keyboard, Xbox, PlayStation, Switch), and the game's A and Y button pictures drawn the right way up.
 - Typing on the profile name screen with the PC keyboard.
 - Free camera (F6) for looking around a level.
@@ -32,35 +32,25 @@ The launcher has five pages: Play, Options, Profiles, MapMaker maps and Updates 
 - HUD options: ammunition display larger and lower, tall health and shield arcs, crosshair always shown, a TimeSplitters 1 style health bar, HUD pictures kept at the shape they were made for, and a weapon bar like Future Perfect's.
 - HD front-end pictures and HUD pieces (TS2 Redux, bekoha), in the release as `hd_textures.bin` and `hd_hud.bin`.
 - The levels' fine detail textures on every piece of the level, not only the near ones.
-- Cutscene black bars drawn correctly at the start and the end of a cutscene (they can be turned off).
-- Lights: the lights that follow models and the light of particles are kept across frames, so they do not flicker.
+- Lights: the lights that follow models and the light of particles are kept across frames.
 - Performance overlay and logging (frames a second, where each frame's time goes).
 
-### Fixes
-- The C runtime's trigonometry and square root (`sin`, `cos`, `sqrt`, `asin`, `acos`) returned NaN now and then in recompiled code. That made wall cameras and turrets hang straight down, soldiers turn away from the player and models flicker. Fixed.
-- The game's speed is kept in step with a 60 Hz frame cap, and a few crashes of the original code (a bad object in a screen's list that closed the game in Aztec Ruins, among others) are guarded.
-- Sounds that the original opened from the developers' own PC paths (and so stayed silent) are read from `sounds.pak` instead, and every character's whole voice is loaded in Story, so soldiers die with more than one or two cries.
 
 ### Content that was in the game but cut
 - Hidden Arcade maps **Dam** and **Wild West** opened in the Arcade list.
 - The MapMaker's cut **Gothic tileset**, MapMaker Story maps playable by every connected controller (up to four) and the MapMaker's memory caps lifted.
 - The cut **Default Gun** (a Desert Eagle) in the Arcade weapon lists.
-- Characters that are in the game's tables but not in the Select Character list (Gasmask Special, the NeoTokyo pedestrians, X-Ray Skel).
-- Robot Factory's cut opening camera sequence (option).
+- Characters that are in the game's tables but not in the Select Character list (Gasmask Special, Consultant, the NeoTokyo pedestrians, X-Ray Skel).
 - **Chemical Plant**: the TimeSplitters 1 level, converted from the PS2 game's data into the Arcade map list. It is made from your own files by `tools/mk_chemical_plant.py` and is shown only if `resourcepacks/chemical_plant` exists. It is a work in progress (some floor and brick textures are misaligned).
-- An **Unlock Everything** line in Player Options, and a **Quit to Desktop** line in the main menu.
+
 
 ### Options
 Options that change the game's balance or look are off by default, so the defaults behave like the original:
-Rocket Launcher or Silenced Pistol in every Story level, infinite health, infinite ammunition, one-hit kills, always-shown crosshair, TimeSplitters 1 health bar, and **TS2 Beta Weapons**.
+Rocket Launcher in every Story level, infinite health, one-hit kills, always-shown crosshair, TimeSplitters 1 health bar, and **TS2 Beta Weapons**.
+- An **Unlock Everything** line in Player Options, and a **Quit to Desktop** line in the main menu.
 
 **TS2 Beta Weapons** replaces the gun models with the beta weapons from `resourcepacks/beta_weapons/gun.pak` (only the gun models; no level is touched). The release includes that pak.
 
-### Resource packs
-A folder under `resourcepacks` beside the exe replaces what you choose, in the style of a texture or sound pack. Nothing here is required to play:
-- `beta_weapons/gun.pak`: the beta weapons (included in the release).
-- `default_gun/gun.pak` and `chemical_plant/`: made from your own game files by the scripts in `tools`.
-- `xmas/xmas.bin` and `homefront/sounds/*.wav`: still read by the game if you provide them, but neither is distributed or offered by the launcher.
 
 ### Launcher
 `TS2Launcher.exe` (Dear ImGui, Direct3D 11): a blue theme with the game logo and rotating key art, ISO check and import, the options above, profile and MapMaker map import and export, and updates from GitHub releases (a token can be set for a private repository).
