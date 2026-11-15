@@ -105,6 +105,6 @@ There is no online service: the game's System Link (its local network mode) runs
 - [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp), the recompiler and runtime this is built on.
 - [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) for the overridable function layout and instruction hooks.
 - [Zydis](https://github.com/zyantific/zydis), [toml++](https://github.com/marzer/tomlplusplus), [Dear ImGui](https://github.com/ocornut/imgui) and [SDL](https://github.com/libsdl-org/SDL).
-- TS2 Redux and bekoha for the HD pictures, fonts and HUD pieces.
+- TS2 Redux (https://github.com/HFTSRedux/TS2Redux) and bekoha (https://bekoha.github.io/ts2/) for the HD pictures, fonts and HUD pieces.
 
 The full list of credits is in [CREDITS.md](CREDITS.md). TimeSplitters 2 belongs to its rights holders; this is a fan project and is not affiliated with them.
