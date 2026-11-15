@@ -74,7 +74,7 @@ There is no online service: the game's System Link (its local network mode) runs
 - **VPN:** the broadcast also goes out of every adapter, so players on Radmin, Hamachi or ZeroTier find each other's games.
 - **Host and Join:** one player hosts and relays the traffic of the others, so only the host's port must be reachable (UPnP asks the router for it) and the joiners need to open nothing.
 
-### Content that was in the game but cut
+### Restored content
 - Hidden Arcade maps **Dam** and **Wild West** opened in the Arcade list.
 - The MapMaker's cut **Gothic tileset**, MapMaker Story maps playable by every connected controller (up to four) and the MapMaker's memory caps lifted.
 - The cut **Default Gun** (a Desert Eagle) in the Arcade weapon lists.
