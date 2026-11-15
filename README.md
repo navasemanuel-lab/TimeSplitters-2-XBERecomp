@@ -109,6 +109,12 @@ There is no online service: the game's System Link (its local network mode) runs
 
 The full list of credits is in [CREDITS.md](CREDITS.md). TimeSplitters 2 belongs to its rights holders; this is a fan project and is not affiliated with them.
 
+## Windows and antivirus warnings
+
+The executables are not code-signed, so Windows SmartScreen may say "unknown publisher" the first time, and Windows Defender or another antivirus may flag them by mistake. This is common with small open-source projects, and the usual way out is to allow the file or add the game's folder as an exception. The code is public in this repository and the release zip is made from it with `release.bat`.
+
+The launcher connects to GitHub to check for and download new versions, and the game itself has no online service.
+
 ## License
 
 The code of this port (everything outside `sdk/`) is under the GNU General Public License v3, see [LICENSE](LICENSE). The SDK in `sdk/` keeps its own MIT license. This does not cover the game itself, its data or the HD pictures, fonts and icons by others: those keep their owners' terms (see [CREDITS.md](CREDITS.md)).
