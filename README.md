@@ -108,3 +108,7 @@ There is no online service: the game's System Link (its local network mode) runs
 - TS2 Redux (https://github.com/HFTSRedux/TS2Redux) and bekoha (https://bekoha.github.io/ts2/) for the HD pictures, fonts and HUD pieces.
 
 The full list of credits is in [CREDITS.md](CREDITS.md). TimeSplitters 2 belongs to its rights holders; this is a fan project and is not affiliated with them.
+
+## License
+
+The code of this port (everything outside `sdk/`) is under the GNU General Public License v3, see [LICENSE](LICENSE). The SDK in `sdk/` keeps its own MIT license. This does not cover the game itself, its data or the HD pictures, fonts and icons by others: those keep their owners' terms (see [CREDITS.md](CREDITS.md)).
