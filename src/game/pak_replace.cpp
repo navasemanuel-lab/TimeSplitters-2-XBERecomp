@@ -1,5 +1,5 @@
 // Pak replacements: the runtime asks g_replace_file for a host file to open in place of a pak the game opens by its disc path
-// (kernel/files.cpp). Here: the Chemical Plant level (hidden_levels.cpp) and the gun paks of the beta_reborn and default_gun
+// (kernel/files.cpp). Here: the gun paks of the beta_reborn and default_gun
 // options (resourcepacks/beta_reborn, resourcepacks/default_gun).
 #include <algorithm>
 #include <cctype>
@@ -20,7 +20,6 @@
 
 namespace fs = std::filesystem;
 
-std::string ChemicalPlantPak(const std::string& lower);  // hidden_levels.cpp
 
 namespace {
 
@@ -140,7 +139,6 @@ std::string Replace(const std::string& xbox_path) {
     }
     std::string lower = xbox_path;
     std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return char(std::tolower(c)); });
-    if (std::string chemical = ChemicalPlantPak(lower); !chemical.empty()) return chemical;
     return BetaReborn(lower);
 }
 

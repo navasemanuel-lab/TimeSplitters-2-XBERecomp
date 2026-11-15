@@ -62,7 +62,6 @@ The launcher has five pages: Play, Options, Profiles, MapMaker maps and Updates 
 - **Fog:** can be turned off, and the scene is then drawn clear to the far plane.
 - **Console Effects:** heat shimmer around fire, the soft atmosphere filter, motion trails and the extra rain and snow trails, each can be switched on or off.
 - **Smooth Lighting:** - the lights that follow models and the light of particles are kept across frames.
-- **Fitting to the GPU:** the first run measures how fast the GPU is and lowers the internal resolution if the frames take too long. On an integrated GPU it uses reduced precision, no MSAA and at most 4x anisotropic filtering.
 - **HUD options:** ammunition display larger and lower, tall health and shield arcs, crosshair always shown, a TimeSplitters 1 style health bar, and a weapon bar like Future Perfect's.
 - HD front-end pictures and HUD pieces (TS2 Redux, bekoha), in the release as `hd_textures.bin` and `hd_hud.bin`.
 
@@ -79,14 +78,13 @@ There is no online service: the game's System Link (its local network mode) runs
 - The MapMaker's cut **Gothic tileset**, MapMaker Story maps playable by every connected controller (up to four) and the MapMaker's memory caps lifted.
 - The cut **Default Gun** (a Desert Eagle) in the Arcade weapon lists.
 - Characters that are in the game's tables but not in the Select Character list (Gasmask Special, Consultant, the NeoTokyo pedestrians, X-Ray Skel).
-- **Chemical Plant**: the TimeSplitters 1 level, converted from the PS2 game's data into the Arcade map list. It is made from your own files by `tools/mk_chemical_plant.py` and is shown only if `resourcepacks/chemical_plant` exists.
 
 
 ### Launcher
 `TS2Launcher.exe` (Dear ImGui, Direct3D 11): a blue theme with the game logo and rotating key art, ISO check and import, the options above, profile and MapMaker map import and export, and updates from GitHub releases (a token can be set for a private repository).
 
 ### Tools
-`tools/` has the Python scripts used to build this: the HD texture bundles, button icon sheets, language tables, pak inspection, and converters for TimeSplitters 1 level data (`ts1level.py`, `ts1_to_xbr.py`) used for Chemical Plant.
+`tools/` has the Python scripts used to build this: the HD texture bundles, button icon sheets, language tables, pak inspection.
 
 ## System requirements
 

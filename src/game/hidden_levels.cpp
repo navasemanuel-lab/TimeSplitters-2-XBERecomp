@@ -12,30 +12,12 @@
 #include "kernel/memory.h"
 #include "xdk/hle.h"
 
-#include "game/chemical_setup.inc"
-
-// Chemical Plant: the real TimeSplitters level (level 5 of TimeSplitters 2 PC's xbob.pak) under level number 53 (arcade/l_53_AR.pak,
-// made by tools/mk_chemical_plant.py from the retail l_35_AR.pak, in resourcepacks/chemical_plant). Its level row is one of the
-// zeroed rows of the level table (0x2D0F48, 0x20 bytes: text, number, tune, sky, story setup, arcade setup) given Dam's
-// words, with the sky and the arcade setup the PC build has for the map (tools/mk_chem_setup.py), and it is the list's 21st map: the list (0x2BD588, 0x30 bytes a map, 20 maps) has no room after it, so the code
-// reads a copy (the [[imm]] entries of config/game.toml).
+// The Arcade list is read from a copy with one spare entry after the 20 maps (the [[imm]] entries of config/game.toml).
 namespace fs = std::filesystem;
 
 namespace {
-constexpr uint32_t kOld = 0x2BD588, kEntry = 0x30, kCount = 20, kRows = 21, kChemical = 53, kChemicalText = 0x91C;
-constexpr uint32_t kLevels = 0x2D0F48, kLevelRow = 0x20, kDamRow = 10, kFreeRow = 23;
+constexpr uint32_t kOld = 0x2BD588, kEntry = 0x30, kCount = 20, kRows = 21, kSpare = 53, kSpareText = 0x91C;
 uint32_t g_list = 0;
-
-fs::path ChemicalPak() { return app::ExeDir() / "resourcepacks" / "chemical_plant" / "arcade" / "l_53_AR.pak"; }
-bool ChemicalAvailable() {
-    static int have = -1;
-    if (have < 0) {
-        std::error_code ec;
-        have = fs::exists(ChemicalPak(), ec) ? 1 : 0;
-        if (!have) LOGW("levels: %s not found, Chemical Plant is left out of the arcade list", ChemicalPak().string().c_str());
-    }
-    return have == 1;
-}
 
 uint32_t List() {
     if (g_list) return g_list;
@@ -43,54 +25,22 @@ uint32_t List() {
     for (uint32_t w = 0; w < kCount * kEntry / 4; w++) kernel::W32(g_list + w * 4, kernel::R32(kOld + w * 4));
     for (uint32_t w = 0; w < kEntry / 4; w++) kernel::W32(g_list + kCount * kEntry + w * 4, kernel::R32(g_list + 19 * kEntry + w * 4));
     uint32_t row = g_list + kCount * kEntry;
-    kernel::W32(row, kChemicalText);
-    kernel::W32(row + 4, kChemical);
+    kernel::W32(row, kSpareText);
+    kernel::W32(row + 4, kSpare);
     kernel::W32(row + 8, 0xFFFFFFFF);
     kernel::W32(row + 0x1C, 1);
-    if (kernel::R32(kLevels + kFreeRow * kLevelRow + 4) == 0) {  // a removed level's row
-        for (uint32_t w = 0; w < kLevelRow / 4; w++)
-            kernel::W32(kLevels + kFreeRow * kLevelRow + w * 4, kernel::R32(kLevels + kDamRow * kLevelRow + w * 4));
-        kernel::W32(kLevels + kFreeRow * kLevelRow, kChemicalText);
-        kernel::W32(kLevels + kFreeRow * kLevelRow + 4, kChemical);
-        // the level is the real Chemical Plant (TimeSplitters 2 PC's level 5): its own sky (index 5, as that build's row has it)
-        // and its own arcade setup (the PC executable's), written to memory here: header, pickup table, weapon lists
-        constexpr uint32_t kHeaderWords = sizeof(kChemHeader) / 4, kPickWords = sizeof(kChemPickups) / 4, kListWords = sizeof(kChemLists) / 4;
-        uint32_t setup = mem::AllocSystem((kHeaderWords + kPickWords + kListWords) * 4);
-        uint32_t pick = setup + kHeaderWords * 4, lists = pick + kPickWords * 4;
-        for (uint32_t w = 0; w < kHeaderWords; w++) kernel::W32(setup + w * 4, kChemHeader[w]);
-        for (uint32_t w = 0; w < kPickWords; w++) kernel::W32(pick + w * 4, kChemPickups[w]);
-        for (uint32_t w = 0; w < kListWords; w++) kernel::W32(lists + w * 4, kChemLists[w]);
-        kernel::W32(setup + 5 * 4, pick);
-        kernel::W32(setup + 9 * 4, lists);
-        kernel::W32(kLevels + kFreeRow * kLevelRow + 8, 6);  // the tune: music/ts1_chemical_plant44fx3_7july.wav (1-based index 6 of the music table at 0x34372C, the PC build's too)
-        kernel::W32(kLevels + kFreeRow * kLevelRow + 0xC, 5);
-        kernel::W32(kLevels + kFreeRow * kLevelRow + 0x14, setup);
-        // the music: the game plays the level's group of 13 tracks (table 0x3441C0, 13 words a group, the group the level's row index in
-        // the level table; 1-based indexes into the music table at 0x34372C). The removed level's group is empty; the PC build's for
-        // the map has track 6, music/ts1_chemical_plant44fx3_7july.wav, as the main one and its variants
-        constexpr uint32_t kMusicGroups = 0x3441C0, kGroup[13] = {0, 6, 0, 0, 6, 6, 6, 48, 62, 65, 0, 0, 0};
-        for (uint32_t k = 0; k < 13; k++) kernel::W32(kMusicGroups + (kFreeRow * 13 + k) * 4, kGroup[k]);
-    }
     return g_list;
 }
 }  // namespace
 
 extern "C" uint32_t GameArcadeList() { return List(); }
 
-// the pak of Chemical Plant (the file's path as the game opens it, lower case): its own
-std::string ChemicalPlantPak(const std::string& lower) {
-    std::string s = lower;
-    for (char& c : s) if (c == '\\') c = '/';
-    if (s.size() < 18 || s.compare(s.size() - 18, 18, "arcade/l_53_ar.pak") != 0 || !ChemicalAvailable()) return {};
-    return ChemicalPak().string();
-}
-
 X86_EXTERN_FUNC(__imp__sub_001AEA70);
 X86_FUNC(sub_001AEA70) {
     uint32_t index = kernel::R32(ctx.esp + 4);
     if (index < kRows) {
         uint32_t number = kernel::R32(List() + index * kEntry + 4);
-        if (number == 32 || number == 34 || number == 35 || number == kChemical) {
+        if (number == 32 || number == 34 || number == 35) {
             static int logged = 0;
             if (logged++ < 2) LOGR("levels: hidden map %u opened in the arcade list", number);
             kernel::Return(ctx, 1, 0);
@@ -147,7 +97,6 @@ void HiddenNotreDame(X86Context& ctx, uint8_t*) {
     X86Context saved = ctx;
     uint32_t menu = ctx.edi;
     AddMapItem(ctx, menu, 34, 19, 0x697);
-    if (ChemicalAvailable()) AddMapItem(ctx, menu, kChemical, 20, kChemicalText);
     ctx = saved;
 }
 
