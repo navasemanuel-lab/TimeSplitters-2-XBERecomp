@@ -9,6 +9,7 @@ namespace controls {
 void Pad(int port, input::Pad& pad);  // GameInfo::pad
 bool KeyboardActive();
 bool Aiming();  // port 1's left trigger (aim) is held, from the keyboard or a pad
+bool FiredWithin(int ms);  // port 1's right trigger (fire) was held in the last ms milliseconds
 bool StatusHeld();  // the Back key is down: the status screen, where the mouse does not turn the view
 
 // each control the keyboard and mouse give: a key or mouse button, rebound in the settings panel

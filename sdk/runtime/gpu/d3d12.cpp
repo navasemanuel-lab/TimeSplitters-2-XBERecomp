@@ -5114,7 +5114,7 @@ static bool PauseOpen() {
     return at && now - at < 600;
 }
 
-bool BlackBar(const Assembled& a) {
+bool BlackBar(const Assembled& a, bool* window = nullptr) {
     if (!a.vertices.empty()) return false;
     uint32_t n = std::min<uint32_t>(a.vertex_count ? a.vertex_count : a.draw_count, 18);  // the start and end of a cutscene: three quads in one draw (a full-screen one and the two bars, 18 corners)
     if (n < 3) return false;
@@ -5148,7 +5148,11 @@ bool BlackBar(const Assembled& a) {
     if (!got_pos || x0 > 1.5f || x1 < 638.0f) return false;
     // the translucent quad the cutscenes lay over the picture between the bars (the picture's own window, its edges are the bars'
     // inner ones: 69..411 over bars of 0..70 and 411..481): with the bars gone it would show as a lighter rectangle
-    if (!black) return !in_middle && y0 >= 1.5f && y0 <= 150.0f && y1 >= 330.0f && y1 <= 479.0f && n <= 6;
+    if (!black) {
+        bool win = !in_middle && y0 >= 1.5f && y0 <= 150.0f && y1 >= 330.0f && y1 <= 479.0f && n <= 6;
+        if (win && window) *window = true;  // drawn, stretched over the whole screen's height (StretchWindow)
+        return win && !window;
+    }
     // the bars slide in and out at the start and the end of a cutscene: any height, down to a sliver
     bool top = y0 <= 1.5f && y1 >= 1.0f && y1 <= 150.0f, bottom = y1 >= 478.0f && y0 >= 330.0f && y0 <= 479.0f;
     // both bars in one draw (two quads, every corner in the top or the bottom band, none across the middle)
@@ -5307,6 +5311,38 @@ bool SoftenShift(Assembled& a, float keep) {
                 xy[1] = cy + (xy[1] - cy) * keep;
             }
             std::memcpy(p, xy, 8);
+            any = true;
+        }
+    }
+    return any;
+}
+
+// The cutscenes' translucent window quad (between the bars) with the bars gone: its edges taken to the screen's top and bottom,
+// so the tint covers the whole picture instead of a band across the middle
+bool StretchWindow(Assembled& a) {
+    if (!a.vertices.empty()) return false;
+    static thread_local std::vector<uint8_t> store[16];
+    bool copied[16] = {};
+    bool any = false;
+    for (int r = 0; r < 2; r++) {
+        if (!((a.regs >> r) & 1)) continue;
+        const VertexElement& e = a.elements[size_t(r)];
+        if (!((e.format == DXGI_FORMAT_R32G32B32A32_FLOAT && r == 0) || (e.format == DXGI_FORMAT_R32G32B32_FLOAT && r == 1)) || e.buffer >= a.buffer_count) continue;
+        VertexBuffer& vb = a.buffers[e.buffer];
+        if (!vb.src || !vb.stride || uint32_t(e.offset) + 8 > vb.stride) continue;
+        if (!copied[e.buffer]) {
+            store[e.buffer].assign(vb.src, vb.src + vb.bytes);
+            vb.src = store[e.buffer].data();
+            copied[e.buffer] = true;
+        }
+        uint8_t* base = store[e.buffer].data();
+        uint32_t n = std::min<uint32_t>(vb.bytes / vb.stride, 6);
+        for (uint32_t v = 0; v < n; v++) {
+            uint8_t* p = base + size_t(v) * vb.stride + e.offset;
+            float xy[2];
+            std::memcpy(xy, p, 8);
+            xy[1] = xy[1] < 240.0f ? 0.0f : 480.0f;
+            std::memcpy(p + 4, &xy[1], 4);
             any = true;
         }
     }
@@ -5510,7 +5546,12 @@ void D3D12Backend::Draw(const State& s, uint32_t prim, uint32_t start, uint32_t 
                  g_draw_stack[4], g_draw_stack[5], g_draw_stack[6], g_draw_stack[7], app::Get().heat_haze ? "made" : "not made");
     }
     static int bars_logged = 0;
-    const bool letterbox = gpu::g_crop_letterbox.load(std::memory_order_relaxed) && count <= 18 && kernel::R32(0x4A46EC) < 100 && !PauseOpen() && BlackBar(a);
+    bool window_quad = false;
+    const bool letterbox = gpu::g_crop_letterbox.load(std::memory_order_relaxed) && count <= 18 && kernel::R32(0x4A46EC) < 100 && !PauseOpen() && BlackBar(a, &window_quad);
+    if (window_quad) {
+        static int window_logged = 0;
+        if (StretchWindow(a) && window_logged++ < 4) LOGR("letterbox: the cutscene's translucent window quad kept, stretched to the whole screen (prim %u count %u)", prim, count);
+    }
     if (letterbox && bars_logged++ < 6) LOGR("letterbox: black bar at the top or bottom, not drawn (prim %u count %u)", prim, count);
     bool haze = glow_quads || (!app::Get().heat_haze && shimmer && !invisible_warp);
     if (!blur && !haze && !letterbox && (skip.empty() || std::find(skip.begin(), skip.end(), draw_ordinal_) == skip.end())) DrawGeometry(a);
@@ -6601,7 +6642,7 @@ void D3D12Backend::FitRenderScale(double gpu_ms) {
         LOGR("d3d12: render scale fitting done (%s), %u%%", why, s.render_percent);
         app::Save();
     };
-    if (s.render_percent != fit_percent_ || s.msaa != fit_msaa_) return done("set by the player");
+    if (s.render_lines || s.render_percent != fit_percent_ || s.msaa != fit_msaa_) return done("set by the player");
     constexpr size_t kWindow = 300;
     constexpr uint32_t kWindows = 60;
     fit_ms_.push_back(float(gpu_ms));

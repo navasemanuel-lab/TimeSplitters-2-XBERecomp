@@ -38,6 +38,8 @@
 #include "gpu/backend.h"
 
 void SetXmasTextures(bool on);  // game/pak_replace.cpp
+void UnlockAllRequest();        // game/unlock_menu.cpp
+int UnlockAllResult();
 
 namespace panel {
 
@@ -245,12 +247,10 @@ void Mouse() {
     o.mouse_vertical = vert;
     Speed(Tr("Velocidad horizontal al apuntar##m"), o.mouse_aim_h);
     Speed(Tr("Velocidad vertical al apuntar##m"), o.mouse_aim_v);
-    ImGui::Checkbox(Tr("Invertir eje vertical"), &o.invert_mouse);
     {
         int sway = int(o.turn_sway);
         if (ImGui::SliderInt(Tr("Sway de la mira al girar (estilo GoldenEye)"), &sway, 0, 100, "%d%%")) o.turn_sway = uint32_t(sway);
     }
-    ImGui::Checkbox(Tr("Auto Lookahead (nivelar la vista al horizonte)"), &o.auto_lookahead);
     if (ImGui::Button(Tr("Restablecer a 1x"))) {
         o.pad_h = o.pad_v = o.pad_aim_h = o.pad_aim_v = o.mouse_aim_h = o.mouse_aim_v = 100;
         o.mouse_sensitivity = o.mouse_vertical = 100;
@@ -293,10 +293,10 @@ void Screen() {
         // The internal resolution, lowest to highest, as lines drawn: the console's own 480, the window's own pixels
         // (Native), then 720p up to 4320p. It is the render scale, set from the output's height.
         float now = app::RenderScale(640, 480).y * 480.0f;           // lines drawn now
-        float out_h = now * 100.0f / float(std::max<uint32_t>(st.render_percent, 1));  // the output's lines
+        float out_h = app::OutputLines();  // the output's lines
         struct Step { float lines; const char* name; };
         const Step steps[] = {{480.0f, "Original"}, {out_h, "Nativa"}, {720.0f, "720p"}, {1080.0f, "1080p"},
-                              {1440.0f, "1440p"}, {2160.0f, "2160p"}, {2880.0f, "2880p"}, {4320.0f, "4320p"}};
+                              {1440.0f, "1440p"}, {2160.0f, "2160p"}, {2880.0f, "5K"}};
         char label[48];
         std::snprintf(label, sizeof(label), "%.0fp", now);
         for (const Step& s : steps)
@@ -309,7 +309,9 @@ void Screen() {
                 bool special = s.name[0] == 'N' || s.name[0] == 'O';
                 std::snprintf(name, sizeof(name), "%s (%.0fp)", special ? Tr(s.name[0] == 'N' ? "Nativa" : "Original") : s.name, s.lines);
                 if (ImGui::Selectable(name, std::fabs(s.lines - now) < 1.5f) && out_h > 0.0f) {
-                    st.render_percent = std::clamp<uint32_t>(uint32_t(s.lines / out_h * 100.0f + 0.5f), 1, 1600);
+                    bool native = s.name[0] == 'N';
+                    st.render_lines = native ? 0u : uint32_t(s.lines + 0.5f);
+                    st.render_percent = native ? 100u : std::clamp<uint32_t>(uint32_t(s.lines / out_h * 100.0f + 0.5f), 1, 1600);
                     st.render_fitted = true;
                 }
             }
@@ -381,7 +383,11 @@ void Audio() {
     static const char* const kOut[] = {"Automatico (segun tus altavoces)", "Mono", "Estereo 2.0", "Surround 5.1"};
     int out = int(std::min<uint32_t>(st.audio_out, 3));
     if (ComboTr(Tr("Salida de audio (al reiniciar)"), &out, kOut, 4)) st.audio_out = uint32_t(out);
-    ImGui::Separator();  // the gain (audio_boost_db in settings.toml) has no slider: it keeps its setting, 6 dB by default
+    {
+        int vol = int(st.master_volume);
+        if (ImGui::SliderInt(Tr("Volumen general"), &vol, 0, 100, "%d%%")) st.master_volume = uint32_t(vol);
+    }
+    ImGui::Separator();
     ImGui::TextWrapped("%s", Tr("El volumen de la musica y de los efectos se ajusta en Options > Audio Options del juego."));
 }
 
@@ -394,7 +400,10 @@ void Cheats() {
     ImGui::Checkbox(Tr("Un solo golpe en Historia"), &o.one_hit);
     ImGui::TextWrapped("%s", Tr("Cualquier dano mata, al jugador y a los enemigos, en los niveles de Historia."));
     ImGui::Separator();
-    ImGui::TextWrapped("%s", Tr("Desbloquear todo (niveles, personajes y retos del perfil) esta en el menu del juego: Options > Player Options > Unlock Everything."));
+    if (ImGui::Button(Tr("Desbloquear todo"))) UnlockAllRequest();
+    ImGui::TextWrapped("%s", Tr("Niveles, personajes, trucos, cinematicas y retos del perfil. Tambien esta en el menu del juego: Options > Player Options > Unlock Everything."));
+    if (UnlockAllResult() == 1) ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.5f, 1.0f), "%s", Tr("Todo desbloqueado en el perfil actual."));
+    if (UnlockAllResult() == 2) ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), "%s", Tr("No hay un perfil abierto: entra al menu Options > Player Options y vuelve a intentarlo."));
 }
 
 void Gameplay() {

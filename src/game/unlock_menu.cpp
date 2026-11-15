@@ -7,6 +7,7 @@
 // The Player Options menu is built at 0x97B10: each line is an item of the menu library (0xF0EC0 makes it in a menu,
 // +0x20 its text, +0x30 what it does when chosen, +0x34 and +0x38 its place), made as the others are, before the menu's
 // size is worked out.
+#include <atomic>
 #include <cstring>
 
 #include "core/log.h"
@@ -34,21 +35,25 @@ uint32_t Text(const char* s, size_t n) {
 }
 
 // what the game's routine writes (0x1AE531...), for the shown profile's progress
-void Unlock(X86Context& ctx) {
+bool Unlock(X86Context& ctx) {
     uint32_t slot = kernel::R32(kShownSlot);
     uint32_t stats = kernel::CallGuest(ctx, kProfileStats, {slot});
     uint32_t first = kernel::R32(kProfiles);
     if (stats == kScratchStats || !first || stats < first + kStatsOffset ||
         stats >= first + 16 * kProfileSize) {
         LOGR("unlock: no profile for slot %u (stats %08X), nothing unlocked", slot, stats);
-        return;
+        return false;
     }
     for (uint32_t off = 0xBC8; off < 0xC20; off += 4) kernel::W32(stats + off, 0xFFFFFFFF);  // lists and arcade leagues
     for (uint32_t off = 0x4A8; off < 0x4A8 + 0x42 * 0x14; off += 0x14) kernel::W32(stats + off, 4);  // challenges
     for (uint32_t off = 0x1328; off < 0x133C; off += 4) kernel::W32(stats + off, 1);                 // feature flags
     kernel::W32(stats + 0xBC4, 0xFFFFFFFF);                                                          // cutscenes
     LOGR("unlock: profile of slot %u (stats %08X), everything unlocked", slot, stats);
+    return true;
 }
+
+std::atomic<int> g_request{0};  // the panel asked (F1): done on the game's thread, at a frame
+std::atomic<int> g_result{0};   // 0 nothing yet, 1 unlocked, 2 no profile to unlock
 
 // (menu): the line's action
 void UnlockChosen(X86Context& ctx, uint8_t*) {
@@ -82,4 +87,16 @@ void PlayerOptionsUnlock(X86Context& ctx, uint8_t*) {
         if (logged++ < 2) LOGR("unlock: an Unlock Everything line added to Player Options (item %08X)", item);
     }
     ctx = saved;
+}
+
+// The settings panel's Unlock Everything (F1 > Trucos): the same unlock, for the profile the game last showed, done at the
+// next frame on the game's thread (it calls the game's code). 0 nothing asked yet, 1 unlocked, 2 no profile to unlock.
+void UnlockAllRequest() {
+    g_result = 0;
+    g_request = 1;
+}
+int UnlockAllResult() { return g_result; }
+void UnlockFrame(X86Context& ctx) {
+    if (!g_request.exchange(0)) return;
+    g_result = Unlock(ctx) ? 1 : 2;
 }

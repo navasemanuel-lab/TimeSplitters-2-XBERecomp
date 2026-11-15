@@ -564,7 +564,8 @@ void Mix(float* out, uint32_t frames) {
     // the mix a little under full scale, its peaks bent round instead of cut off: many sounds at once (a fight, every
     // cry of every character) no longer clip into a harsh buzz
     constexpr float kKnee = 0.6f;
-    const float kMaster = 0.7f * std::pow(10.0f, float(app::Get().audio_boost) / 20.0f);
+    // 0.7 under full scale and 6 dB over the console's level (the clean, loud sound of this port), times the master volume
+    const float kMaster = 0.7f * 1.9953f * float(std::min<uint32_t>(app::Get().master_volume, 100)) / 100.0f;
     for (uint32_t i = 0; i < frames * n; i++) {
         float x = out[i] * kMaster, a = std::abs(x);
         if (a > kKnee) x = std::copysign(kKnee + (1 - kKnee) * std::tanh((a - kKnee) / (1 - kKnee)), x);

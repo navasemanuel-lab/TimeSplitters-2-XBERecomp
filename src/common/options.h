@@ -36,14 +36,13 @@ struct Options {
     bool no_letterbox = false;  // the cutscenes' black bars not drawn (game/ammo_hud.cpp)
     bool reticle_always = false; // the crosshair shown without aiming (game/ammo_hud.cpp)
     bool ts1_bars = false;     // a TimeSplitters 1 style health bar instead of the arcs (game/ammo_hud.cpp)
-    bool hud_unstretch = false; // the HUD's pictures kept at the shape they were made for, at the screen's edges (game/ammo_hud.cpp)
+    bool hud_unstretch = true;  // the HUD's pictures kept at the shape they were made for, at the screen's edges (game/ammo_hud.cpp): always on, no setting
     // the prompts' buttons as the input in use shows them (common/button_icons.cpp); the style 0 follows the last input used,
     // else one of button_icons::Style
     bool button_icons = true;
     uint32_t button_icons_style = 0;
     bool menus_wide = true;    // the menus, loading and movies stretched to the output's shape, not 4:3 with bars
     bool story_rockets = false; // the Rocket Launcher in every Story level (game/story_rockets.cpp)
-    bool story_pistol = false;  // the Silenced Pistol in every Story level (game/story_rockets.cpp)
     bool beta_reborn = false;   // gun models of the Beta Reborn PS2 mod from resourcepacks/beta_reborn/ (game/pak_replace.cpp)
     bool xmas_textures = false;  // the Christmas Edition textures from resourcepacks/xmas/ (game/pak_replace.cpp), read at start
     bool default_gun = true;     // the cut Default Gun (a Desert Eagle) in the Arcade weapon lists (game/unused_content.cpp)
@@ -53,7 +52,6 @@ struct Options {
     bool homefront_sfx = false;  // the Homefront sounds of resourcepacks/homefront/sounds (game/sound_pack.cpp)
     bool level_intros = false;   // Robot Factory opens with its cut camera sequence (game/level_intros.cpp)
     bool one_hit = false;        // any damage kills in Story, enemies too (game/infinite_health.cpp)
-    bool infinite_ammo = false;   // the ammunition kept full (game/infinite_health.cpp)
     bool infinite_health = false; // the players' health kept full (game/infinite_health.cpp)
     // the keys of controls::kBindings: 0xFFFFFFFF the default, 0 none, else a virtual key
     static constexpr int kKeys = 32;

@@ -62,6 +62,7 @@ void Load() {
     // at most the output's own: past it the scene is supersampled, at a frame rate few GPUs keep
     s.render_percent = std::clamp<uint32_t>(t["render_percent"].value_or(s.render_percent), 1, 1600);
     // a settings file from before the fitting: the scale there is the player's own, kept
+    s.render_lines = t["render_lines"].value_or(0) == 0 ? 0u : std::clamp<uint32_t>(t["render_lines"].value_or(0), 480, kMaxRenderLines);
     s.render_fitted = t["render_fitted"].value_or(true);
     s.fps_cap = t["fps_cap"].value_or(s.fps_cap);
     s.vsync = t["vsync"].value_or(s.vsync);
@@ -110,7 +111,7 @@ void Load() {
     s.monitor = t["monitor"].value_or(s.monitor);
     s.pause_unfocused = t["pause_unfocused"].value_or(s.pause_unfocused);
     s.audio_out = std::min<uint32_t>(t["audio_output"].value_or(s.audio_out), 3);
-    s.audio_boost = std::min<uint32_t>(t["audio_boost_db"].value_or(s.audio_boost), 12);
+    s.master_volume = std::min<uint32_t>(t["master_volume"].value_or(s.master_volume), 100);
     for (const Option& o : kGame.options) {
         if (o.flag) *o.flag = t[o.key].value_or(*o.flag);
         else *o.value = t[o.key].value_or(*o.value);
@@ -126,6 +127,7 @@ toml::table Table() {
                   {"width", int64_t(s.width)},
                   {"height", int64_t(s.height)},
                   {"render_percent", int64_t(s.render_percent)},
+                  {"render_lines", int64_t(s.render_lines)},
                   {"render_fitted", s.render_fitted},
                   {"fps_cap", int64_t(s.fps_cap)},
                   {"vsync", s.vsync},
@@ -158,7 +160,7 @@ toml::table Table() {
                   {"monitor", s.monitor},
                   {"pause_unfocused", s.pause_unfocused},
                   {"audio_output", int64_t(s.audio_out)},
-                  {"audio_boost_db", int64_t(s.audio_boost)}};
+                  {"master_volume", int64_t(s.master_volume)}};
     for (const Option& o : kGame.options) {
         if (o.flag) t.insert(o.key, *o.flag);
         else t.insert(o.key, int64_t(*o.value));
@@ -343,6 +345,12 @@ Mode CachedOutput() {
     return mode;
 }
 
+float OutputLines() {
+    Mode m = CachedOutput();
+    float aspect = Aspect();
+    return std::min(float(m.width), m.height * aspect) / aspect;
+}
+
 Scale2 RenderScale(uint32_t guest_width, uint32_t guest_height) {
     if (!guest_width || !guest_height) return {1.0f, 1.0f};
     // the picture as the output shows it, bars left out
@@ -351,7 +359,10 @@ Scale2 RenderScale(uint32_t guest_width, uint32_t guest_height) {
     float w = std::min(float(m.width), m.height * aspect);
     // over 100% the scene is drawn larger than the output and shrunk to it, as wide as the GPU's textures go (x8 the
     // console's 480 lines is 3840 high, 6827 wide at 16:9)
-    float k = std::min(Get().render_percent / 100.0f, std::min(15360.0f / w, 8192.0f / (w / aspect)));
+    float lines = w / aspect;
+    float want = Get().render_lines ? Get().render_lines / lines : Get().render_percent / 100.0f;
+    // never above 5K (2880 lines), nor past what the GPU's textures hold
+    float k = std::min({want, kMaxRenderLines / lines, 15360.0f / w, 8192.0f / lines});
     return {std::max(w * k / guest_width, 0.1f), std::max(w / aspect * k / guest_height, 0.1f)};
 }
 

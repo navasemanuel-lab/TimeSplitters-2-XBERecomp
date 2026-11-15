@@ -23,6 +23,10 @@
 namespace {
 
 constexpr uint32_t kMode = 0x4AD80C, kStory = 4;
+// The game's mode word is 4 in Challenge's Infiltration levels too, which load as Story levels; the menu's choice
+// ([0x35C40C]) tells them apart: 4 for Story, 7 for Challenge (the level load's log has both). The guns are for Story only.
+constexpr uint32_t kMenuMode = 0x35C40C, kMenuStory = 4;
+bool StoryProper() { return kernel::R32(kMode) == kStory && kernel::R32(kMenuMode) == kMenuStory; }
 constexpr uint32_t kGameState = 0x497100;
 constexpr uint32_t kWeapons = 0x2C9BF0, kWeaponSize = 0x24;
 constexpr uint32_t kGuns = 0x2C3468, kGunSize = 0x240, kGunAmmo = 0x10;
@@ -30,7 +34,6 @@ constexpr uint32_t kAmmoMost = 0x2C1678, kAmmoSize = 0xD0, kAmmoTypes = 0x1C;
 constexpr uint32_t kOwned = 0x984, kAmmo = 0xA2C;
 
 // the guns given in Story: the weapon table's entry, the models' names and the sounds' names the level must load for it
-// (story_pistol: the Silenced Pistol, gun 0 of the gun table, entry 1 of the weapon table, ammunition type 1)
 struct Given {
     uint32_t weapon;
     bool (*enabled)();
@@ -39,8 +42,12 @@ struct Given {
 };
 const Given kGiven[] = {
     {19, [] { return game::Opt().story_rockets; }, {"ob/guns/rocketlauncher", "ob/guns/missile", "ob/ammo/ammorocket"}, {"ROCKET", "MISSILE"}, "rockets"},
-    {1, [] { return game::Opt().story_pistol; }, {"ob/guns/silencedpistol", "ob/ammo/ammohandgun"}, {"SILENC"}, "pistol"},
 };
+
+// the guns whose assets (models, textures, HUD pictures, sounds) the current level asked for when it loaded: a gun turned on
+// afterwards (the option changed in the panel, then a restart, which does not load the level again) has none of them, and
+// given anyway it was drawn black with the screen black. It is given from the next load on.
+bool g_asked[sizeof(kGiven) / sizeof(kGiven[0])] = {};
 
 std::unordered_set<uint32_t> g_reset;  // characters whose guns were reset since the last frame looked
 
@@ -128,21 +135,33 @@ void Give(uint32_t chr, const Given& g) {
 
 void InfiniteHealthFrame();  // infinite_health.cpp
 void UnusedContentFrame();   // unused_content.cpp
+void UnlockFrame(X86Context& ctx);  // unlock_menu.cpp
 
 // the guns' reset (character)
 X86_EXTERN_FUNC(__imp__sub_00042AA0);
 X86_FUNC(sub_00042AA0) {
     uint32_t chr = kernel::R32(ctx.esp + 4);
     __imp__sub_00042AA0(ctx, base);
-    if ((game::Opt().story_rockets || game::Opt().story_pistol) && chr) g_reset.insert(chr);
+    if (game::Opt().story_rockets && chr) g_reset.insert(chr);
 }
 
 // the level's models loaded, at its start, before its sounds and textures
 X86_EXTERN_FUNC(__imp__sub_00149810);
 X86_FUNC(sub_00149810) {
-    if (kernel::R32(kMode) == kStory)
-        for (const Given& g : kGiven)
-            if (g.enabled()) AskGun(ctx, g);
+    for (bool& a : g_asked) a = false;
+    {  // which kinds of level load here (Story, Arcade, Challenge's Infiltration): the game's mode words and the menu's choice
+        static int logged = 0;
+        if (logged++ < 40)
+            LOGR("level load: mode [4AD80C] %u [4AD810] %u, menu mode [35C40C] %u index [35C418] %u number [35C41C] %u [35C42C] %u, level [4A46EC] %u",
+                 kernel::R32(kMode), kernel::R32(0x4AD810), kernel::R32(0x35C40C), kernel::R32(0x35C418), kernel::R32(0x35C41C),
+                 kernel::R32(0x35C42C), kernel::R32(0x4A46EC));
+    }
+    if (StoryProper())
+        for (size_t i = 0; i < sizeof(kGiven) / sizeof(kGiven[0]); i++)
+            if (kGiven[i].enabled()) {
+                AskGun(ctx, kGiven[i]);
+                g_asked[i] = true;
+            }
     __imp__sub_00149810(ctx, base);
 }
 
@@ -151,12 +170,13 @@ X86_EXTERN_FUNC(__imp__sub_001ADF80);
 X86_FUNC(sub_001ADF80) {
     InfiniteHealthFrame();
     UnusedContentFrame();
+    UnlockFrame(ctx);
     if (!g_reset.empty()) {
         uint32_t chr = FirstPlayer();
         if (chr && g_reset.count(chr)) {
-            if (kernel::R32(kMode) == kStory)
-                for (const Given& g : kGiven)
-                    if (g.enabled()) Give(chr, g);
+            if (StoryProper())
+                for (size_t i = 0; i < sizeof(kGiven) / sizeof(kGiven[0]); i++)
+                    if (kGiven[i].enabled() && g_asked[i]) Give(chr, kGiven[i]);
             g_reset.clear();
         }
         else if (g_reset.size() > 256) g_reset.clear();  // characters that never became the player's

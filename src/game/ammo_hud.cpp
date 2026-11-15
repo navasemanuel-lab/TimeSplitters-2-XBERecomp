@@ -13,6 +13,7 @@
 #include <set>
 
 #include "app/app.h"
+#include "common/controls.h"
 #include "common/options.h"
 #include "core/log.h"
 #include "gpu/backend.h"
@@ -20,6 +21,8 @@
 #include "xdk/hle.h"
 
 bool FreeCamOn();  // free_cam.cpp
+
+bool ScopeZoomed();  // aim.cpp
 
 namespace {
 constexpr uint32_t kScreen = 0x483F28, kRightMargin = 0x4A8D08, kBottomMargin = 0x4A8D0C;
@@ -32,6 +35,17 @@ float g_ax = 0, g_ay = 0;
 
 float F(uint32_t va) { return std::bit_cast<float>(kernel::R32(va)); }
 void SetF(uint32_t va, float v) { kernel::W32(va, std::bit_cast<uint32_t>(v)); }
+
+
+namespace {
+// The always-shown reticle (and what goes with it: the shots straight along it, no recoil) is not for a scope's zoom, nor for
+// the states the game itself takes the crosshair away in (4, 7 and 0xE, at 0x146A44: a gun or camera the player controls)
+bool ReticleOn(uint32_t player) {
+    if (!game::Opt().reticle_always || player <= 0x10000) return false;
+    uint32_t state = kernel::R32(player + 0x158);
+    return !ScopeZoomed() && state != 4 && state != 7 && state != 0xE;
+}
+}  // namespace
 
 X86_EXTERN_FUNC(__imp__sub_000BF0A0);
 X86_FUNC(sub_000BF0A0) {
@@ -162,7 +176,7 @@ X86_FUNC(sub_000C83B0) {
     uint32_t player = kernel::R32(0x497100);
     uint32_t old = 0, old_state = 0, type_at = 0, old_type = 0;
     bool forced = false;
-    if (game::Opt().reticle_always && player > 0x10000 && !FreeCamOn()) {
+    if (ReticleOn(player) && !FreeCamOn()) {
         // the aiming reticle always, with no exception (any weapon, any state, the auto aim's lock or not): the game draws
         // that one when the state is 8 (0xC8AF3) and the flag is set, so the draw sees the player aiming, and puts both back
         old = kernel::R32(player + 0x884);
@@ -193,7 +207,7 @@ X86_FUNC(sub_00141150) {
     uint32_t ret = kernel::R32(ctx.esp);
     uint32_t who = kernel::R32(ctx.esp + 4), player = kernel::R32(0x497100);
     __imp__sub_00141150(ctx, base);
-    if (game::Opt().reticle_always && who == player && player > 0x10000 && (ret == 0x141238 || ret == 0x141588 || ret == 0x141615)) {
+    if (who == player && ReticleOn(player) && (ret == 0x141238 || ret == 0x141588 || ret == 0x141615)) {
         x87_pop(ctx);
         x87_push(ctx, 1.0);
         static int logged = 0;
@@ -214,11 +228,12 @@ bool CutsceneCamera() {
 X86_EXTERN_FUNC(__imp__sub_00141260);
 X86_FUNC(sub_00141260) {
     uint32_t player = kernel::R32(0x497100);
-    bool forced = false;
+    bool forced = false, straight = false;
     uint32_t old_state = 0, old_flag = 0;
-    if (game::Opt().reticle_always && player > 0x10000) {
+    if (ReticleOn(player)) {
         uint32_t id = kernel::R32(player);
         if (id < 4 && kernel::R32(0x2CE388 + id * 4) == 0) {
+            straight = true;
             old_state = kernel::R32(player + 0x158);
             old_flag = kernel::R32(player + 0x884);
             forced = old_state != 8 || old_flag != 1;
@@ -231,28 +246,17 @@ X86_FUNC(sub_00141260) {
         }
     }
     __imp__sub_00141260(ctx, base);
+    // the result is the index of the target the auto aim found (-1 none): the shot is then turned toward that target. With the
+    // reticle always shown the shot goes straight along the reticle: no target, whatever the auto aim found
+    if (straight && int32_t(ctx.eax) >= 0) {
+        ctx.eax = 0xFFFFFFFFu;
+        kernel::W32(player + 0x8A4, 0);
+        static int logged = 0;
+        if (logged++ < 3) LOGR("reticle_always: the auto aim's target dropped, the shot goes straight along the reticle");
+    }
     if (forced) {
         kernel::W32(player + 0x158, old_state);
         kernel::W32(player + 0x884, old_flag);
-    }
-}
-
-// The aim's unsteadiness (0x140E10, run each frame for the player in [0x497100]): its amplitudes at +0x174 and +0x17C
-// (raised by moving and firing) turn through a phase at +0x180 and +0x184 into the angles added to the view's yaw and pitch
-// at +0x188 and +0x18C, which the shots follow (0x146BF0: yaw + [+0x188], pitch + [+0x18C]). With reticle_always they are
-// left at zero for the pad's player, so the shots go straight along the reticle without the kick of recoil.
-X86_EXTERN_FUNC(__imp__sub_00140E10);
-X86_FUNC(sub_00140E10) {
-    __imp__sub_00140E10(ctx, base);
-    uint32_t player = kernel::R32(0x497100);
-    if (game::Opt().reticle_always && player > 0x10000) {
-        uint32_t id = kernel::R32(player);
-        if (id < 4 && kernel::R32(0x2CE388 + id * 4) == 0) {
-            kernel::W32(player + 0x188, 0);
-            kernel::W32(player + 0x18C, 0);
-            static int logged = 0;
-            if (logged++ < 2) LOGR("reticle_always: the aim's unsteadiness (recoil) held at zero for player %08X", player);
-        }
     }
 }
 
@@ -532,4 +536,35 @@ X86_FUNC(sub_001B5E80) {
     HudUnstretch(ctx.esp + 4, g_in_ring);
     CrosshairUnstretch(ctx.esp + 4);
     __imp__sub_001B5E80(ctx, base);
+}
+
+// Diagnostic: where the first player's shots go (shotdiag in the log). The fire function (0xB1040) uses the ammunition at its
+// end (0xAB470 (gun's data, slot, ...) called at 0xB1FBC): at that moment the gun's data holds the aim point at +0x13A0, the
+// direction of the shot at +0x1394 and the character that holds the gun at +0x1300. Each shot of the first player is logged
+// with the view's direction ([player+0x108], from yaw +0x148 plus the unsteadiness +0x188 and pitch +0x14C plus +0x18C), the
+// state and the aiming flag, the aim point, the shot's direction and the angle between it and the view's. The first calls of
+// anyone are logged too, to see what the arguments are.
+X86_EXTERN_FUNC(__imp__sub_000AB470);
+X86_FUNC(sub_000AB470) {
+    uint32_t data = kernel::R32(ctx.esp + 4), player = kernel::R32(0x497100);
+    uint32_t mine = player > 0x10000 ? kernel::R32(player + 0x1BC) : 0;
+    static int raw = 0, logged = 0;
+    bool valid = data > 0x10000 && data < 0x8C000000;
+    uint32_t owner = valid ? kernel::R32(data + 0x1300) : 0;
+    if (raw++ < 12) LOGR("shotdiag raw: ammo use by data %08X owner %08X (the player's object %08X)", data, owner, mine);
+    if (valid && mine && owner == mine && logged < 80) {
+        auto f = [](uint32_t va) { return std::bit_cast<float>(kernel::R32(va)); };
+        float vx = f(player + 0x108), vy = f(player + 0x10C), vz = f(player + 0x110);
+        float sx = f(data + 0x1394), sy = f(data + 0x1398), sz = f(data + 0x139C);
+        float vl = std::sqrt(vx * vx + vy * vy + vz * vz), sl = std::sqrt(sx * sx + sy * sy + sz * sz);
+        float deg = (vl > 1e-6f && sl > 1e-6f)
+                        ? std::acos(std::clamp((vx * sx + vy * sy + vz * sz) / (vl * sl), -1.0f, 1.0f)) * 57.29578f : -1.0f;
+        uint32_t cam = kernel::R32(0x4B2F60);
+        LOGR("shotdiag: state %u flag %u | view dir %.3f %.3f %.3f (yaw %.1f pitch %.1f, unsteady %.2f %.2f) | aim point %.2f %.2f %.2f | shot dir %.3f %.3f %.3f | angle %.2f deg | camera at %.2f %.2f %.2f | auto-aim target %08X",
+             kernel::R32(player + 0x158), kernel::R32(player + 0x884), vx, vy, vz, f(player + 0x148), f(player + 0x14C),
+             f(player + 0x188), f(player + 0x18C), f(data + 0x13A0), f(data + 0x13A4), f(data + 0x13A8), sx, sy, sz, deg,
+             cam ? f(cam + 0x27C) : 0.f, cam ? f(cam + 0x280) : 0.f, cam ? f(cam + 0x284) : 0.f, kernel::R32(player + 0x8A4));
+        logged++;
+    }
+    __imp__sub_000AB470(ctx, base);
 }

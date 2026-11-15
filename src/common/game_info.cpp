@@ -84,9 +84,7 @@ void Ui(double fps) {
 }
 // the settings file's keys: the mouse's, and each control's key_<id>
 std::vector<app::Option> MakeOptions() {
-    std::vector<app::Option> o{{"invert_mouse", &Opt().invert_mouse, nullptr},
-                               {"auto_lookahead", &Opt().auto_lookahead, nullptr},
-                               {"turn_sway", nullptr, &Opt().turn_sway},
+    std::vector<app::Option> o{                               {"turn_sway", nullptr, &Opt().turn_sway},
                                {"mouse_sensitivity", nullptr, &Opt().mouse_sensitivity},
                                {"mouse_vertical", nullptr, &Opt().mouse_vertical},
                                {"fov_degrees", nullptr, &Opt().fov},
@@ -102,7 +100,6 @@ std::vector<app::Option> MakeOptions() {
                                {"mouse_aim_h", nullptr, &Opt().mouse_aim_h},
                                {"mouse_aim_v", nullptr, &Opt().mouse_aim_v},
                                {"menus_wide", &Opt().menus_wide, nullptr},
-                               {"hud_unstretch", &Opt().hud_unstretch, nullptr},
                                {"arcs_tall", &Opt().arcs_tall, nullptr},
                                {"ts1_bars", &Opt().ts1_bars, nullptr},
                                {"button_icons", &Opt().button_icons, nullptr},
@@ -111,7 +108,6 @@ std::vector<app::Option> MakeOptions() {
                                {"no_letterbox", &Opt().no_letterbox, nullptr},
                                {"level_intros", &Opt().level_intros, nullptr},
                                {"story_rockets", &Opt().story_rockets, nullptr},
-                               {"story_pistol", &Opt().story_pistol, nullptr},
                               {"beta_reborn", &Opt().beta_reborn, nullptr},
                               {"xmas_textures", &Opt().xmas_textures, nullptr},
                               {"gothic_tileset", &Opt().gothic_tileset, nullptr},
@@ -120,7 +116,6 @@ std::vector<app::Option> MakeOptions() {
                               {"mapmaker_memory", &Opt().mapmaker_memory, nullptr},
                               {"homefront_sfx", &Opt().homefront_sfx, nullptr},
                               {"infinite_health", &Opt().infinite_health, nullptr},
-                              {"infinite_ammo", &Opt().infinite_ammo, nullptr},
                               {"one_hit", &Opt().one_hit, nullptr}};
     static std::string names[Options::kKeys], names2[Options::kKeys];
     for (int i = 0; i < controls::kBindingCount && i < Options::kKeys; i++) {

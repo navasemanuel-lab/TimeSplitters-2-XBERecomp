@@ -45,6 +45,10 @@ enum : uint16_t {
 
 std::atomic<bool> g_keyboard{false};
 std::atomic<bool> g_status{false};
+int64_t NowMsSteady() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+std::atomic<int64_t> g_fire_ms{-100000};  // the last time the fire trigger was held
 std::atomic<bool> g_aiming{false};  // the objectives screen is up: Back opens it and closes it, so do B and Start
 
 // a key as the panel binds it: the left and right Ctrl, Shift and Alt as the one key
@@ -400,6 +404,7 @@ void Pad(int port, input::Pad& p) {
     Script(p);
     p.connected = true;  // the keyboard and mouse are always a pad: no reconnect prompt, no clash with a real one
     if (port == 0) g_aiming = p.analog[kLeftTrigger] > 0x40;
+    if (port == 0 && p.analog[kRightTrigger] > 0x40) g_fire_ms = NowMsSteady();
     // Back and Start together open the panel; while it is open the game sees an idle pad
     static bool combo_was = false;
     bool combo = (p.buttons & kBack) && (p.buttons & kStart);
@@ -416,6 +421,7 @@ void Pad(int port, input::Pad& p) {
 
 bool StatusHeld() { return g_status; }
 bool Aiming() { return g_aiming; }
+bool FiredWithin(int ms) { return NowMsSteady() - g_fire_ms.load() < ms; }
 
 bool KeyboardActive() { return g_keyboard; }
 

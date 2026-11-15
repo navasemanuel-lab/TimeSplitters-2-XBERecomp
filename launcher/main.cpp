@@ -85,6 +85,7 @@ std::string Said() {
     return g_msg;
 }
 
+float g_scale = 1.f;  // the window's scale (DPI)
 std::atomic<bool> g_busy{false};     // a background job (copy, download) is running
 std::atomic<float> g_progress{0};    // 0..1 of that job
 std::atomic<bool> g_quit{false};
@@ -336,8 +337,26 @@ void OptionsTab() {
     if (g_cfg_dirty) ImGui::TextColored(ImVec4(1, .8f, .3f, 1), "Hay cambios sin guardar");
     if (GameRunning()) ImGui::TextColored(ImVec4(1, .6f, .3f, 1), "El juego está abierto: cierra el juego antes de guardar, o pisará estos cambios al salir.");
     ImGui::Separator();
+    // the sections as a row of labels, one open at a time, the open one underlined
+    static int sec = 0;
+    {
+        const char* labels[] = {"Pantalla", "Gráficos", "Audio", "Controles", "Juego", "Packs de recursos"};
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        for (int i = 0; i < 6; i++) {
+            if (i) ImGui::SameLine(0, 26.f * g_scale);
+            ImVec2 at = ImGui::GetCursorScreenPos(), sz = ImGui::CalcTextSize(labels[i]);
+            ImGui::PushID(i);
+            if (ImGui::InvisibleButton("##sec", ImVec2(sz.x, sz.y + 8.f * g_scale))) sec = i;
+            bool hot = ImGui::IsItemHovered(), on = sec == i;
+            ImGui::PopID();
+            ImU32 col = on ? IM_COL32(235, 242, 255, 255) : hot ? IM_COL32(190, 210, 245, 255) : IM_COL32(130, 150, 185, 255);
+            dl->AddText(at, col, labels[i]);
+            if (on) dl->AddRectFilled(ImVec2(at.x, at.y + sz.y + 5.f * g_scale), ImVec2(at.x + sz.x, at.y + sz.y + 7.f * g_scale), IM_COL32(60, 140, 255, 255));
+        }
+        ImGui::Separator();
+    }
     ImGui::BeginChild("opts", ImVec2(0, 0));
-    if (ImGui::CollapsingHeader("Pantalla", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (sec == 0) {
         ComboStr("Modo de pantalla", "display_mode", "windowed", {{"fullscreen", "Pantalla completa"}, {"borderless", "Sin bordes"}, {"windowed", "Ventana"}});
         int64_t w = CfgInt("width", 0), h = CfgInt("height", 0);
         std::string cur = w == 0 ? "Automática (la del escritorio)" : std::to_string(w) + " x " + std::to_string(h);
@@ -352,21 +371,18 @@ void OptionsTab() {
             ImGui::EndCombo();
         }
         ComboStr("Relación de aspecto", "aspect_ratio", "auto", {{"auto", "La de la pantalla"}, {"4:3", "4:3"}, {"16:9", "16:9"}, {"16:10", "16:10"}, {"21:9", "21:9"}, {"32:9", "32:9"}});
-        SliderInt("Escala de render (%)", "render_percent", 100, 25, 200);
+        ComboInt("Resolución interna (máx. 5K)", "render_lines", 0, {{0, "Nativa (la de la pantalla)"}, {480, "Original (480p)"}, {720, "720p"}, {1080, "1080p"}, {1440, "1440p"}, {2160, "2160p (4K)"}, {2880, "2880p (5K)"}});
         SliderInt("Límite de fotogramas (0 = sin límite)", "fps_cap", 60, 0, 360);
         CheckBox("Sincronización vertical", "vsync", true);
-        ComboInt("Interpolación de fotogramas", "frame_interp", 1, {{1, "Desactivada"}, {2, "x2"}, {3, "x3"}, {4, "x4"}});
         CheckBox("HDR10 (si Windows tiene el HDR activado)", "hdr", false);
         CheckBox("Menús, carga y vídeos a pantalla ancha", "menus_wide", true);
         CheckBox("Cinemáticas sin barras negras", "no_letterbox", false);
-        CheckBox("HUD sin estirar en pantallas anchas", "hud_unstretch", false);
         CheckBox("Arcos de vida y escudo altos (como TS2 Redux)", "arcs_tall", false);
     }
-    if (ImGui::CollapsingHeader("Gráficos")) {
+    if (sec == 1) {
         ComboInt("MSAA", "msaa", 0, {{0, "Desactivado"}, {2, "2x"}, {4, "4x"}, {8, "8x"}});
         ComboInt("Suavizado de bordes", "edge_smoothing", 0, {{0, "Desactivado"}, {1, "FXAA"}, {2, "SMAA"}});
         ComboInt("Filtrado anisotrópico", "anisotropic_filtering", 0, {{0, "Como pide el juego"}, {2, "2x"}, {4, "4x"}, {8, "8x"}, {16, "16x"}});
-        ComboInt("Oclusión ambiental", "ambient_occlusion", 0, {{0, "Desactivada"}, {1, "SSAO"}, {2, "GTAO"}});
         SliderInt("Campo de visión (original: 60)", "fov_degrees", 60, 60, 100, "%d grados");
         SliderInt("Brillo", "brightness", 100, 50, 150);
         SliderInt("Saturación", "saturation", 100, 50, 200);
@@ -375,25 +391,22 @@ void OptionsTab() {
         CheckBox("Distorsión de calor del fuego", "heat_haze", true);
         CheckBox("Luz de fuego y explosiones con bordes suaves", "smooth_lighting", true);
     }
-    if (ImGui::CollapsingHeader("Audio")) {
-        SliderInt("Ganancia del audio (dB, 0 = nivel de la consola)", "audio_boost_db", 6, 0, 12);
+    if (sec == 2) {
+        SliderInt("Volumen general (%)", "master_volume", 100, 0, 100);
         ComboInt("Salida de audio (al reiniciar)", "audio_output", 0, {{0, "Automática"}, {1, "Mono"}, {2, "Estéreo 2.0"}, {3, "5.1"}});
         CheckBox("Pausar el juego al perder el foco", "pause_unfocused", true);
     }
-    if (ImGui::CollapsingHeader("Controles")) {
+    if (sec == 3) {
         SliderInt("Sensibilidad del ratón (100 = 1x)", "mouse_sensitivity", 100, 10, 400);
         SliderInt("Velocidad vertical del ratón (%)", "mouse_vertical", 100, 25, 200);
-        CheckBox("Invertir el eje vertical del ratón", "invert_mouse", false);
-        CheckBox("Auto Lookahead (nivela la vista al horizonte)", "auto_lookahead", false);
         CheckBox("Apuntado con giroscopio (DualSense, DualShock 4, Switch Pro)", "gyro_aim", false);
         CheckBox("Iconos de botones según el mando o el teclado", "button_icons", true);
         ImGui::TextDisabled("Las teclas se reasignan dentro del juego, con F1 > Controles.");
     }
-    if (ImGui::CollapsingHeader("Juego")) {
+    if (sec == 4) {
         ComboStr("Idioma del juego (al reiniciar)", "language", "english",
                  {{"english", "English"}, {"german", "Deutsch"}, {"french", "Français"}, {"spanish", "Español"}, {"italian", "Italiano"}});
         CheckBox("Cañón de cohetes en todos los niveles de Historia", "story_rockets", false);
-        CheckBox("Pistola silenciada en todos los niveles de Historia", "story_pistol", false);
         CheckBox("Default Gun en las listas de armas de Arcade", "default_gun", true);
         CheckBox("Tileset gótico del MapMaker", "gothic_tileset", true);
         CheckBox("MapMaker: mapas de Historia con todos los mandos (co-op)", "mapmaker_coop", true);
@@ -402,10 +415,9 @@ void OptionsTab() {
         ImGui::Separator();
         ImGui::TextDisabled("Trucos");
         CheckBox("Vida infinita", "infinite_health", false);
-        CheckBox("Munición infinita", "infinite_ammo", false);
         CheckBox("Un solo golpe en Historia", "one_hit", false);
     }
-    if (ImGui::CollapsingHeader("Packs de recursos")) {
+    if (sec == 5) {
         CheckBox("TS2 Beta Weapons (resourcepacks/beta_weapons)", "beta_reborn", false);
         ImGui::TextDisabled("Chemical Plant está en la lista de Arcade si resourcepacks/chemical_plant existe.");
     }
@@ -1068,7 +1080,6 @@ struct Tex {
 };
 std::vector<Tex> g_art, g_portrait;
 Tex g_logo;
-float g_scale = 1.f;
 ImFont *g_big = nullptr, *g_play = nullptr, *g_tabfont = nullptr;
 int g_page = 0;
 

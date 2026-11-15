@@ -21,6 +21,7 @@ struct Settings {
     DisplayMode display_mode = DisplayMode::Fullscreen;
     uint32_t width = 0, height = 0;  // 0 is the desktop mode
     uint32_t render_percent = 100;   // of the output height, 1 to 200
+    uint32_t render_lines = 0;       // the internal resolution as lines drawn (480 to 2880, 5K at most); 0 is render_percent
     uint32_t fps_cap = 60;           // 0 unlimited
     bool vsync = true;
     bool low_latency = true;         // one frame queued for the display, not two: shown a frame sooner after the input
@@ -68,9 +69,8 @@ struct Settings {
     bool pause_unfocused = true;  // the game and its sound stop while the window is in the background
     // the speakers mixed for: 0 as Windows has them, 1 mono, 2 stereo, 3 5.1 (taken at start)
     uint32_t audio_out = 0;
-    // the mix's gain in dB over the console's (its voices keep 6 dB of headroom and the mix 3 dB more): the clean, loud
-    // sound Boston's port has; 0 is the console's own level
-    uint32_t audio_boost = 6;
+    // the master volume, in percent (0 to 100) of the mix's level, applied at once
+    uint32_t master_volume = 100;
 };
 
 Settings& Get();
@@ -106,6 +106,9 @@ struct Scale2 {
     float x, y;
 };
 Scale2 RenderScale(uint32_t guest_width, uint32_t guest_height);
+// the lines of the picture as the output shows it (bars left out)
+float OutputLines();
+constexpr uint32_t kMaxRenderLines = 2880;  // 5K: no internal resolution above it
 // the shown picture's shape, from the aspect setting or on auto the output's (4:3 at the narrowest), as a fraction in
 // whole numbers and as its ratio
 void AspectFraction(uint32_t& w, uint32_t& h);

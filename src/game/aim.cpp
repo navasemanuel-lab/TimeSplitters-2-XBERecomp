@@ -6,6 +6,8 @@
 // 0x80 plus the stick for X and minus it for Y). The mouse is added to that pair before the multiply, as the stick
 // that gives the counts' angle, so the game's own limits and wrapping apply to it unchanged.
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <bit>
 #include <chrono>
 #include <cmath>
@@ -268,6 +270,13 @@ float WidenAngle(float deg) {
     return std::min(deg * (1.0f + (k - 1.0f) * w), 150.0f);
 }
 
+// A scope's zoom (the sniper rifle's, 20 degrees or less) seen by the projection in play, in the last moments: the
+// always-shown reticle is not drawn then (ammo_hud.cpp)
+std::atomic<int64_t> g_scope_ms{0};
+int64_t NowMs() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 void ProjectionAspect(X86Context& ctx, uint8_t*) {
     float old = F(ctx.esp + 0xC);
     if (!(old > 0.1f && old < 10.0f)) return;
@@ -282,6 +291,7 @@ void ProjectionAspect(X86Context& ctx, uint8_t*) {
     SetF(ctx.esp + 0xC, now);
     // the field of view: the game's 60 degrees, widened to the setting; a scope's zoom kept (WidenAngle)
     float fov = F(ctx.esp + 0x10);
+    if (fov > 1.0f && fov <= 25.0f && kernel::R32(0x4A46EC) < 100 && (mouse::InPlay() || mouse::InPausedWorld())) g_scope_ms = NowMs();
     if (fov > 1.0f && fov < 170.0f) {
         float scaled = WidenAngle(fov);
         static float last = 0;
@@ -313,3 +323,6 @@ void WidenLens(X86Context& ctx, uint8_t*) {
     if (near_plane > 0.0f && near_plane < 10.0f && far_plane > near_plane * 10.0f && far_plane < 20000.0f)
         SetF(ctx.esp + 0x10, 20000.0f);
 }
+
+// whether a scope's zoom is on the view (the last 200 ms)
+bool ScopeZoomed() { return NowMs() - g_scope_ms.load() < 200; }
