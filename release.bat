@@ -38,6 +38,8 @@ robocopy "%OUT%\art" "%STAGE%\art" /e /njh /njs /nfl /ndl >nul
 robocopy "%OUT%\lang" "%STAGE%\lang" /e /njh /njs /nfl /ndl >nul
 robocopy "%OUT%\resourcepacks\beta_weapons" "%STAGE%\resourcepacks\beta_weapons" /e /njh /njs /nfl /ndl >nul
 copy /y "%OUT%\%GAME_EXE%.dll" "%STAGE%\" >nul
+rem the version the launcher compares with the latest release's tag: release.bat 1.1
+if not "%~1"=="" echo %~1>"%STAGE%\version.txt"
 rem the copy is dated now, after the executable's: the zip keeps that order
 powershell -NoProfile -Command "(Get-Item -LiteralPath '%STAGE%\%GAME_EXE%.dll').LastWriteTime = (Get-Date).AddSeconds(30)" || exit /b 1
 tar -a -c -f "%GAME_EXE%.zip" -C "%STAGE%" . || exit /b 1

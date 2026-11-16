@@ -18,8 +18,10 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
@@ -117,6 +119,8 @@ const TrPair kEnglish[] = {
     {"Archivos extraídos: ", "Extracted files: "},
     {"default.xbe de otra versión (", "default.xbe of another version ("},
     {"Imagen de disco: ", "Disc image: "},
+    {" (otra revisión del juego)", " (another revision of the game)"},
+    {"ISO instalada. Es otra revisión del juego: puedes probarla, pero puede fallar.", "Disc copy installed. It is another revision of the game: you can try it, but it may fail."},
     {" es de otra versión del juego (", " is from another version of the game ("},
     {"Este port se hizo con la versión USA (default.xbe ", "This port was made with the USA version (default.xbe "},
     {"No hay juego en ", "No game in "},
@@ -452,8 +456,22 @@ bool ReadFile(const fs::path& p, std::vector<uint8_t>& out) {
     return true;
 }
 
-// the xbe of an image or folder is the release's when its sha1 is
-bool ImageXbe(const fs::path& iso, std::string& sha, std::string& error) {
+// the xbe is TimeSplitters 2's, whatever its revision: its certificate (the header's pointer at 0x118, from the load
+// address at 0x104) has the title id 0x4553000A and the name
+bool IsTs2Xbe(const std::vector<uint8_t>& x) {
+    auto u32 = [&](size_t at) { return at + 4 <= x.size() ? uint32_t(x[at] | x[at + 1] << 8 | x[at + 2] << 16 | uint32_t(x[at + 3]) << 24) : 0u; };
+    if (x.size() < 0x200 || std::memcmp(x.data(), "XBEH", 4) != 0) return false;
+    const uint32_t base = u32(0x104), cert = u32(0x118);
+    if (cert < base || cert - base + 0x20 > x.size()) return false;
+    const size_t at = cert - base;
+    if (u32(at + 8) != 0x4553000A) return false;
+    std::string name;
+    for (int i = 0; i < 15 && at + 0xC + i * 2 + 1 < x.size(); i++) name += char(std::tolower(x[at + 0xC + i * 2]));
+    return name == "timesplitters 2";
+}
+
+// the xbe of an image or folder is the release's when its sha1 is; same_game: it is TimeSplitters 2's, of another revision maybe
+bool ImageXbe(const fs::path& iso, std::string& sha, std::string& error, bool* same_game = nullptr) {
     kernel::Disc disc;
     if (!disc.Open(iso, error)) return false;
     std::vector<uint8_t> xbe;
@@ -462,6 +480,7 @@ bool ImageXbe(const fs::path& iso, std::string& sha, std::string& error) {
         return false;
     }
     sha = Sha1(xbe.data(), xbe.size());
+    if (same_game) *same_game = IsTs2Xbe(xbe);
     return true;
 }
 
@@ -477,6 +496,10 @@ void CheckGame() {
             g_game = {GameState::Ok, T("Archivos extraídos: ") + P8(assets), "default.xbe " + sha};
             return;
         }
+        if (IsTs2Xbe(xbe)) {
+            g_game = {GameState::Ok, T("Archivos extraídos: ") + P8(assets), "default.xbe " + sha + T(" (otra revisión del juego)")};
+            return;
+        }
         other = T("default.xbe de otra versión (") + sha + ")";
     }
     if (fs::is_directory(assets, ec))
@@ -485,7 +508,8 @@ void CheckGame() {
             std::transform(ext.begin(), ext.end(), ext.begin(), [](wchar_t c) { return wchar_t(towlower(c)); });
             if (ext != L".iso") continue;
             std::string sha, error;
-            if (!ImageXbe(e.path(), sha, error)) {
+            bool same = false;
+            if (!ImageXbe(e.path(), sha, error, &same)) {
                 other = P8(e.path().filename()) + ": " + error;
                 continue;
             }
@@ -493,8 +517,11 @@ void CheckGame() {
                 g_game = {GameState::Ok, T("Imagen de disco: ") + P8(e.path()), "default.xbe " + sha};
                 return;
             }
+            if (same && g_game.kind != GameState::Ok) g_game = {GameState::Ok, T("Imagen de disco: ") + P8(e.path()), "default.xbe " + sha + T(" (otra revisión del juego)")};
+            if (same) continue;
             other = P8(e.path().filename()) + T(" es de otra versión del juego (") + sha + ")";
         }
+    if (g_game.kind == GameState::Ok) return;
     if (!other.empty()) g_game = {GameState::Other, other, T("Este port se hizo con la versión USA (default.xbe ") + kExpected + ")."};
     else g_game = {GameState::Missing, T("No hay juego en ") + P8(assets), T("Pon la ISO USA de TimeSplitters 2 con el botón de arriba.")};
 }
@@ -505,11 +532,12 @@ void ImportIso() {
     Job([iso] {
         Say(T("Comprobando la imagen…"));
         std::string sha, error;
-        if (!ImageXbe(iso, sha, error)) {
+        bool same = false;
+        if (!ImageXbe(iso, sha, error, &same)) {
             Say(T("Esa imagen no sirve: ") + error);
             return;
         }
-        if (!kExpected.empty() && sha != kExpected) {
+        if (!kExpected.empty() && sha != kExpected && !same) {
             Say(T("Esa ISO no es la versión USA que usa este port (default.xbe ") + sha + T(", se esperaba ") + kExpected + ").");
             return;
         }
@@ -527,7 +555,7 @@ void ImportIso() {
             return;
         }
         CheckGame();
-        Say(T("ISO USA instalada. Ya puedes jugar."));
+        Say(!kExpected.empty() && sha != kExpected ? T("ISO instalada. Es otra revisión del juego: puedes probarla, pero puede fallar.") : T("ISO USA instalada. Ya puedes jugar."));
     });
 }
 
